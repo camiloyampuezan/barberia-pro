@@ -187,7 +187,7 @@ export default function BarberiaApp({ onLogout }) {
             <Icon name="scissors" size={18} />
           </div>
           <div>
-            <div style={{ fontSize: 20, letterSpacing: 4, color: "#f0e6d3" }}>BARBERÍA PRO</div>
+            <div style={{ fontSize: 20, letterSpacing: 4, color: "#f0e6d3" }}>PEREIRA BARBER</div>
             <div style={{ fontSize: 9, letterSpacing: 3, color: "#555", fontFamily: "Lato, sans-serif" }}>SISTEMA DE GESTIÓN</div>
           </div>
         </div>
