@@ -73,7 +73,7 @@ const Icon = ({ name, size = 18 }) => {
 // ============================================================
 // MAIN APP
 // ============================================================
-export default function BarberiaApp() {
+export default function BarberiaApp({ onLogout }) {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [data, setData] = useState(INITIAL_STATE);
   const [modal, setModal] = useState(null);
@@ -197,7 +197,10 @@ export default function BarberiaApp() {
               ⚠ {lowStock.length} stock bajo
             </div>
           )}
-          <div style={{ fontSize: 11, letterSpacing: 2, color: "#555", fontFamily: "Lato, sans-serif" }}>22 MAY 2026</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+  <div style={{ fontSize: 11, letterSpacing: 2, color: "#555", fontFamily: "Lato, sans-serif" }}>22 MAY 2026</div>
+  <button onClick={onLogout} style={{ background: "none", border: "1px solid #333", borderRadius: 6, padding: "6px 12px", color: "#666", fontFamily: "Oswald, sans-serif", fontSize: 11, letterSpacing: 1, cursor: "pointer" }}>SALIR</button>
+</div>
         </div>
       </div>
 

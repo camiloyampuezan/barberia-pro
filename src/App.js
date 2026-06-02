@@ -1,26 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import BarberiaApp from './barberia-sistema';
 import BookingPage from './barberia-booking';
+import Login from './Login';
+
+function AdminRoute() {
+  const [auth, setAuth] = useState(localStorage.getItem("barberia_auth") === "true");
+
+  const handleLogin = () => setAuth(true);
+
+  const handleLogout = () => {
+    localStorage.removeItem("barberia_auth");
+    setAuth(false);
+  };
+
+  if (!auth) return <Login onLogin={handleLogin} />;
+  return <BarberiaApp onLogout={handleLogout} />;
+}
 
 function App() {
-  const [vista, setVista] = useState('admin');
-
   return (
-    <div>
-      {/* Botones para cambiar vista */}
-      <div style={{ position: 'fixed', top: 10, right: 10, zIndex: 9999, display: 'flex', gap: 8 }}>
-        <button onClick={() => setVista('admin')}
-          style={{ background: vista === 'admin' ? '#c8a96e' : '#333', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}>
-          ADMIN
-        </button>
-        <button onClick={() => setVista('cliente')}
-          style={{ background: vista === 'cliente' ? '#c8a96e' : '#333', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}>
-          CLIENTE
-        </button>
-      </div>
-
-      {vista === 'admin' ? <BarberiaApp /> : <BookingPage />}
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<BookingPage />} />
+        <Route path="/admin" element={<AdminRoute />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
