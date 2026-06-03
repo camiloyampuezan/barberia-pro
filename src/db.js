@@ -79,3 +79,13 @@ export const addPersonal = async (empleado) => {
   if (error) console.error(error);
   return data?.[0];
 };
+
+export const getCitasByDate = async (date) => {
+  const { data, error } = await supabase
+    .from('citas')
+    .select('time, barber_id')
+    .eq('date', date)
+    .neq('status', 'cancelled');
+  if (error) console.error(error);
+  return data || [];
+};

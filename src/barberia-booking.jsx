@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { enviarNotificaciones } from './notificaciones';
-import { addCita } from './db';
+import { addCita, getCitasByDate } from './db';
 
 
 // ─── DATA ────────────────────────────────────────────────────
@@ -18,19 +18,21 @@ const BARBERS = [
   { id: 2, name: "Juan Pablo Herrera", role: "Barbero", exp: "4 años de experiencia", initials: "JP", specialties: ["Corte + Barba", "Arreglo de Barba", "Corte Niños"] },
 ];
 
-const HOURS = ["09:00","09:30","10:00","10:30","11:00","11:30","12:00","14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30"];
-const BOOKED = { "2026-05-23": ["10:00","14:30"], "2026-05-24": ["09:00","11:00","15:00"] };
+const HOURS = ["09:00","09:30","10:00","10:30","11:00","11:30","12:00","02:00","02:30","03:00","03:30","04:00","04:30","05:00","05:30"];
 
 const DAYS = ["DOM","LUN","MAR","MIÉ","JUE","VIE","SÁB"];
 const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
 function getNext14Days() {
   const days = [];
-  const base = new Date("2026-05-22");
-  for (let i = 1; i <= 14; i++) {
+  const base = new Date();
+  for (let i = 1; i <= 30; i++) {
     const d = new Date(base);
     d.setDate(base.getDate() + i);
-    const iso = d.toISOString().split("T")[0];
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const iso = `${y}-${m}-${day}`;
     days.push({ iso, day: DAYS[d.getDay()], num: d.getDate(), month: MONTHS[d.getMonth()], disabled: d.getDay() === 0 });
   }
   return days;
@@ -60,13 +62,24 @@ export default function BookingPage() {
   const [selected, setSelected] = useState({ service: null, barber: null, date: null, time: null });
   const [form, setForm] = useState({ name: "", phone: "", email: "", notes: "" });
   const [booked, setBooked] = useState(false);
+  useEffect(() => {
+  if (selected.date) {
+    getCitasByDate(selected.date).then(citas => {
+      console.log("Citas encontradas:", citas);
+      const slots = citas.map(c => c.time);
+      console.log("Slots ocupados:", slots);
+      setBookedSlots(slots);
+    });
+  }
+}, [selected.date]);
+  const [loading, setLoading] = useState(false); // eslint-disable-line
+  const [bookedSlots, setBookedSlots] = useState([]);
   const days = getNext14Days();
 
   const next = () => setStep(s => s + 1);
   const back = () => setStep(s => s - 1);
 
-  const bookedSlots = BOOKED[selected.date] || [];
-  const availableHours = HOURS.filter(h => !bookedSlots.includes(h));
+
 
   const confirm = async () => {
     if (!form.name || !form.phone) return;
@@ -151,7 +164,7 @@ export default function BookingPage() {
             <Ico n="scissors" s={18} />
           </div>
           <div>
-            <div style={{ fontSize: 18, letterSpacing: 4, color: "#f0e0c0" }}>BARBERÍA PRO</div>
+            <div style={{ fontSize: 18, letterSpacing: 4, color: "#ffffff" }}>PEREIRA BARBER</div>
             <div style={{ fontSize: 9, letterSpacing: 3, color: "#6a5840", fontFamily: "DM Sans" }}>RESERVA TU CITA</div>
           </div>
         </div>
@@ -265,7 +278,7 @@ export default function BookingPage() {
                 <label className="label">Horarios disponibles</label>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 24 }}>
                   {HOURS.map(h => {
-                    const taken = (BOOKED[selected.date] || []).includes(h);
+                    const taken = bookedSlots.includes(h);
                     return (
                       <div key={h} className={`time-chip ${taken ? "disabled" : ""} ${selected.time === h ? "selected" : ""}`}
                         style={{ opacity: taken ? 0.35 : 1, cursor: taken ? "not-allowed" : "pointer" }}
