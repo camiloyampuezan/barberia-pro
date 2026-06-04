@@ -121,7 +121,7 @@ export default function BookingPage() {
   };
 
   return (
-    <div style={{ fontFamily: "'Playfair Display', Georgia, serif", background: "#706e6ec8", height: "100vh", overflow: "hidden", color: "#000000" }}>
+    <div style={{ fontFamily: "'Playfair Display', Georgia, serif", background: "#706e6ec8", minHeight: "100vh", color: "#000000" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
