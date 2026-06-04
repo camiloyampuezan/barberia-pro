@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { enviarNotificaciones } from './notificaciones';
 import { addCita, getCitasByDate } from './db';
+import logo from "./assets/logo.jpeg";
 
 
 // ─── DATA ────────────────────────────────────────────────────
@@ -120,17 +121,17 @@ export default function BookingPage() {
   };
 
   return (
-    <div style={{ fontFamily: "'Playfair Display', Georgia, serif", background: "#f8f4ef", minHeight: "100vh", color: "#1a1209" }}>
+    <div style={{ fontFamily: "'Playfair Display', Georgia, serif", background: "#706e6ec8", height: "100vh", overflow: "hidden", color: "#000000" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         .sans { font-family: 'DM Sans', sans-serif; }
-        .btn-primary { background: #1a1209; color: #f0e0c0; border: none; padding: 14px 32px; border-radius: 4px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; transition: all .2s; width: 100%; }
-        .btn-primary:hover { background: #2d1f0a; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,18,9,0.2); }
+        .btn-primary { background: #000000; color: #ffffff; border: none; padding: 14px 32px; border-radius: 4px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; transition: all .2s; width: 100%; }
+        .btn-primary:hover { background: #bbb09f; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,18,9,0.2); }
         .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
         .btn-back { background: none; border: 1px solid #d4c4a8; color: #8a7560; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 12px; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; transition: all .2s; }
         .btn-back:hover { border-color: #1a1209; color: #1a1209; }
-        .service-card { background: white; border: 1.5px solid #e8ddd0; border-radius: 8px; padding: 18px; cursor: pointer; transition: all .2s; position: relative; }
+        .service-card { background: white; border: 1.5px solid #aa5e00; border-radius: 8px; padding: 18px; cursor: pointer; transition: all .2s; position: relative; }
         .service-card:hover { border-color: #c8a060; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,160,96,0.15); }
         .service-card.selected { border-color: #c8a060; background: #fffbf5; box-shadow: 0 0 0 3px rgba(200,160,96,0.15); }
         .barber-card { background: white; border: 1.5px solid #e8ddd0; border-radius: 10px; padding: 22px; cursor: pointer; transition: all .25s; text-align: center; }
@@ -140,7 +141,7 @@ export default function BookingPage() {
         .day-chip:hover:not(.disabled) { border-color: #c8a060; }
         .day-chip.selected { background: #1a1209; border-color: #1a1209; color: white; }
         .day-chip.disabled { opacity: 0.35; cursor: not-allowed; }
-        .time-chip { background: white; border: 1.5px solid #e8ddd0; border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; transition: all .15s; font-family: 'DM Sans', sans-serif; font-size: 13px; }
+        .time-chip { background: white; border: 1.5px solid #d8e8d0; border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; transition: all .15s; font-family: 'DM Sans', sans-serif; font-size: 13px; }
         .time-chip:hover { border-color: #c8a060; color: #c8a060; }
         .time-chip.selected { background: #1a1209; border-color: #1a1209; color: white; }
         .input { background: white; border: 1.5px solid #e0d4c0; border-radius: 6px; padding: 12px 16px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: #1a1209; width: 100%; outline: none; transition: border .2s; }
@@ -157,27 +158,110 @@ export default function BookingPage() {
         .tag { background: #f5ede0; color: #a07840; border-radius: 20px; padding: 3px 12px; font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: 1px; display: inline-block; }
       `}</style>
 
-      {/* HEADER */}
-      <div style={{ background: "#1a1209", padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 38, height: 38, background: "linear-gradient(135deg, #c8a060, #e8c080)", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Ico n="scissors" s={18} />
-          </div>
-          <div>
-            <div style={{ fontSize: 18, letterSpacing: 4, color: "#ffffff" }}>PEREIRA BARBER</div>
-            <div style={{ fontSize: 9, letterSpacing: 3, color: "#6a5840", fontFamily: "DM Sans" }}>RESERVA TU CITA</div>
-          </div>
-        </div>
-        {/* Step dots */}
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          {[1,2,3,4].map(i => (
-            <div key={i} className={`step-dot ${step === i ? "active" : step > i ? "done" : ""}`} />
-          ))}
-        </div>
+      <div style={{
+  background: "linear-gradient(135deg, #000000, #000000)",
+  padding: "18px 20px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  boxShadow: "0 6px 24px rgba(0,0,0,0.25)"
+}}>
+
+  {/* LEFT: LOGO + BRAND */}
+  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+
+    {/* LOGO REAL */}
+    <div style={{
+  width: 122,
+  height: 122,
+  borderRadius: 120,
+  background: "#fff",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  overflow: "hidden"
+}}>
+  <img 
+    src={logo} 
+    alt="Logo barbería"
+    style={{ width: "100%", objectFit: "contain" }}
+  />
+</div>
+    
+
+    {/* TEXT */}
+    <div>
+      <div style={{
+        fontSize: 38,
+        letterSpacing: 4,
+        color: "#ffffff",
+        fontWeight: 600
+      }}>
+        PEREIRA BARBER
       </div>
 
+      <div style={{
+        fontSize: 15,
+        letterSpacing: 2,
+        color: "#ffffff",
+        fontFamily: "DM Sans"
+      }}>
+        RESERVA EN SEGUNDOS
+      </div>
+    </div>
+  </div>
+
+  {/* RIGHT: STEP + PROGRESS */}
+  <div style={{ textAlign: "right" }}>
+
+    {/* TEXTO DE PASO */}
+    <div style={{
+      fontSize: 12,
+      color: "#ffffff",
+      fontFamily: "DM Sans",
+      marginBottom: 4
+    }}>
+      Paso {step} de 4
+    </div>
+
+    {/* BARRA PROGRESO */}
+    <div style={{
+      width: 80,
+      height: 6,
+      background: "#FFD700",
+      borderRadius: 10,
+      overflow: "hidden"
+    }}>
+      <div style={{
+        width: `${(step / 4) * 100}%`,
+        height: "100%",
+        background: "linear-gradient(90deg, #ffffff, #FFD700)",
+        transition: "width 0.3s ease"
+      }} />
+    </div>
+
+    {/* DOTS */}
+    <div style={{ display: "flex", gap: 5, marginTop: 6, justifyContent: "flex-end" }}>
+      {[1,2,3,4].map(i => (
+        <div key={i} style={{
+          width: 6,
+          height: 6,
+          borderRadius: "50%",
+          background: step === i 
+            ? "#fff" 
+            : step > i 
+              ? "#000000" 
+              : "#000000",
+          transition: "all 0.3s"
+        }} />
+      ))}
+    </div>
+
+  </div>
+</div>
+
       {/* DECORATIVE BAR */}
-      <div style={{ height: 3, background: "linear-gradient(90deg, #c8a060, #e8c080, #c8a060)" }} />
+      <div style={{ height: 3, background: "#FFD700" }} />
 
       <div style={{ maxWidth: 560, margin: "0 auto", padding: "32px 20px 60px" }}>
 
@@ -190,6 +274,52 @@ export default function BookingPage() {
               <p style={{ color: "#8a7560", fontFamily: "DM Sans", fontSize: 14 }}>Selecciona uno de nuestros servicios</p>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
+
+  {/* Información de la barbería */}
+  <div
+    style={{
+      background: "white",
+      border: "1.5px solid #e8ddd0",
+      borderRadius: "10px",
+      padding: "24px",
+      marginBottom: "10px",
+      textAlign: "center"
+    }}
+  >
+    <div className="ornament">✦ ✦ ✦</div>
+
+    <h2
+      style={{
+        fontSize: 24,
+        marginTop: 10,
+        marginBottom: 10,
+        color: "#1a1209"
+      }}
+    >
+      Bienvenido a Nuestra Barbería
+    </h2>
+
+    <p
+      style={{
+        fontFamily: "DM Sans",
+        color: "#8a7560",
+        fontSize: 14,
+        lineHeight: 1.7,
+        maxWidth: "700px",
+        margin: "0 auto"
+      }}
+    >
+      Más que un corte de cabello, ofrecemos una experiencia de estilo,
+      comodidad y atención personalizada. Nuestro equipo está comprometido
+      con brindarte un servicio de calidad para que siempre luzcas tu mejor versión.
+    </p>
+
+    <div style={{ marginTop: 15 }}>
+      <span className="tag">✂ Calidad • Estilo • Profesionalismo</span>
+    </div>
+  </div>
+</div>
               {SERVICES.map(s => (
                 <div key={s.id} className={`service-card ${selected.service?.id === s.id ? "selected" : ""}`} onClick={() => setSelected(p => ({ ...p, service: s }))}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -384,7 +514,7 @@ export default function BookingPage() {
                 { label: "Total a pagar", val: `$${selected.service?.price.toLocaleString()} COP` },
               ].map(r => (
                 <div key={r.label} className="summary-row">
-                  <span style={{ color: "#a09080" }}>{r.label}</span>
+                  <span style={{ color: "#16ac3b" }}>{r.label}</span>
                   <span style={{ fontWeight: r.label === "Total a pagar" ? 700 : 500, color: r.label === "Total a pagar" ? "#c8a060" : "#1a1209", fontFamily: "DM Sans" }}>{r.val}</span>
                 </div>
               ))}
@@ -414,8 +544,8 @@ export default function BookingPage() {
       </div>
 
       {/* FOOTER */}
-      <div style={{ background: "#1a1209", padding: "16px 24px", textAlign: "center" }}>
-        <div style={{ fontSize: 9, letterSpacing: 3, color: "#4a3820", fontFamily: "DM Sans" }}>© 2026 BARBERÍA PRO · TODOS LOS DERECHOS RESERVADOS</div>
+      <div style={{ background: "#000000", padding: "16px 24px", textAlign: "center" }}>
+        <div style={{ fontSize: 9, letterSpacing: 3, color: "#ffffff", fontFamily: "DM Sans" }}>© 2026 BARBERÍA PRO · TODOS LOS DERECHOS RESERVADOS</div>
       </div>
     </div>
   );
