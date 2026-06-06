@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { enviarNotificaciones } from './notificaciones';
 import { addCita, getCitasByDate } from './db';
 import logo from "./assets/logo.jpeg";
-
+import barbero1 from "./assets/barbero1.jpg"
+import barbero2 from "./assets/barbero2.jpg"
 
 // ─── DATA ────────────────────────────────────────────────────
 const SERVICES = [
@@ -15,11 +16,11 @@ const SERVICES = [
 ];
 
 const BARBERS = [
-  { id: 1, name: "Miguel Ángel Torres", role: "Barbero Senior", exp: "8 años de experiencia", initials: "MA", specialties: ["Corte Clásico", "Afeitado Tradicional", "Keratina"] },
-  { id: 2, name: "Juan Pablo Herrera", role: "Barbero", exp: "4 años de experiencia", initials: "JP", specialties: ["Corte + Barba", "Arreglo de Barba", "Corte Niños"] },
+  { id: 1, name: "Miguel Ángel Torres", role: "Barbero Senior", exp: "8 años de experiencia", image: barbero1, initials: "MA", specialties: ["Corte Clásico", "Afeitado Tradicional", "Keratina"] },
+  { id: 2, name: "Juan Pablo Herrera", role: "Barbero", exp: "4 años de experiencia",image: barbero2, initials: "JP", specialties: ["Corte + Barba", "Arreglo de Barba", "Corte Niños"] },
 ];
 
-const HOURS = ["09:00","09:30","10:00","10:30","11:00","11:30","12:00","02:00","02:30","03:00","03:30","04:00","04:30","05:00","05:30"];
+const HOURS = ["09:00","09:30","10:00","10:30","11:00","11:30","12:00","02:00","02:30","03:00","03:30","04:00","04:30","05:00","05:30",];
 
 const DAYS = ["DOM","LUN","MAR","MIÉ","JUE","VIE","SÁB"];
 const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
@@ -27,7 +28,7 @@ const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto
 function getNext14Days() {
   const days = [];
   const base = new Date();
-  for (let i = 1; i <= 30; i++) {
+  for (let i = 0; i <= 30; i++) {
     const d = new Date(base);
     d.setDate(base.getDate() + i);
     const y = d.getFullYear();
@@ -107,6 +108,9 @@ export default function BookingPage() {
       time: selected.time,
       service: selected.service?.name,
       barber: selected.barber?.name,
+      barber_email: selected.barber?.id === 1 
+        ? process.env.REACT_APP_BARBER_1_EMAIL 
+        : process.env.REACT_APP_BARBER_2_EMAIL,
       price: selected.service?.price.toLocaleString(),
     });
 
@@ -353,14 +357,26 @@ export default function BookingPage() {
             <div style={{ textAlign: "center", marginBottom: 32 }}>
               <div className="ornament">✦ ✦ ✦</div>
               <h1 style={{ fontSize: 30, fontWeight: 700, marginTop: 12, marginBottom: 8, letterSpacing: 1 }}>Elige tu barbero</h1>
-              <p style={{ color: "#8a7560", fontFamily: "DM Sans", fontSize: 14 }}>Nuestros profesionales te atenderán</p>
+              <p style={{ color: "#ffffff", fontFamily: "DM Sans", fontSize: 14 }}>Nuestros profesionales te atenderán</p>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 28 }}>
               {BARBERS.map(b => (
                 <div key={b.id} className={`barber-card ${selected.barber?.id === b.id ? "selected" : ""}`} onClick={() => setSelected(p => ({ ...p, barber: b }))}>
-                  <div style={{ width: 60, height: 60, borderRadius: "50%", background: selected.barber?.id === b.id ? "linear-gradient(135deg, #c8a060, #e8c080)" : "linear-gradient(135deg, #e8ddd0, #d4c4a8)", margin: "0 auto 12px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 700, color: selected.barber?.id === b.id ? "#1a1209" : "#8a7560", transition: "all .2s" }}>
-                    {b.initials}
-                  </div>
+                  <img
+  src={b.image}
+  alt={b.name}
+  style={{
+    width: 70,
+    height: 70,
+    borderRadius: "50%",
+    objectFit: "cover",
+    margin: "0 auto 12px",
+    display: "block",
+    border: selected.barber?.id === b.id
+      ? "3px solid #c8a060"
+      : "2px solid #e8ddd0"
+  }}
+/>
                   <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>{b.name.split(" ")[0]} {b.name.split(" ")[1]}</div>
                   <div style={{ fontSize: 11, color: "#c8a060", letterSpacing: 1, fontFamily: "DM Sans", textTransform: "uppercase", marginBottom: 6 }}>{b.role}</div>
                   <div style={{ fontSize: 11, color: "#a09080", fontFamily: "DM Sans", marginBottom: 10 }}>{b.exp}</div>
@@ -408,15 +424,24 @@ export default function BookingPage() {
                 <label className="label">Horarios disponibles</label>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 24 }}>
                   {HOURS.map(h => {
-                    const taken = bookedSlots.includes(h);
-                    return (
-                      <div key={h} className={`time-chip ${taken ? "disabled" : ""} ${selected.time === h ? "selected" : ""}`}
-                        style={{ opacity: taken ? 0.35 : 1, cursor: taken ? "not-allowed" : "pointer" }}
-                        onClick={() => !taken && setSelected(p => ({ ...p, time: h }))}>
-                        {h}
-                      </div>
-                    );
-                  })}
+  const taken = bookedSlots.includes(h);
+  const now = new Date();
+  const todayIso = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const nowHours = now.getHours();
+  const nowMinutes = now.getMinutes();
+  const [slotHours, slotMinutes] = h.split(':').map(Number);
+  const isPastHour = selected.date === todayIso && 
+  (slotHours < nowHours || (slotHours === nowHours && slotMinutes <= nowMinutes));
+  const disabled = taken || isPastHour;
+  return (
+    <div key={h}
+      className={`time-chip ${disabled ? "disabled" : ""} ${selected.time === h ? "selected" : ""}`}
+      style={{ opacity: disabled ? 0.35 : 1, cursor: disabled ? "not-allowed" : "pointer" }}
+      onClick={() => !disabled && setSelected(p => ({ ...p, time: h }))}>
+      {h}
+    </div>
+  );
+})}
                 </div>
               </>
             )}
