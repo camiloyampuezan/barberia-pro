@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { getCitas, addCita, updateCita, deleteCita, getClientes, addCliente, getInventario, updateInventario, addInventario, getVentas, addVenta, getPersonal, addPersonal } from './db';
+import { enviarConfirmacionCita, enviarCancelacionCita } from './notificaciones';
 
 // ============================================================
 // DATA & STATE
@@ -345,11 +346,43 @@ function Agenda({ data, setData, showToast }) {
     }
   };
 
-  const updateStatus = async (id, status) => {
-    await updateCita(id, { status });
-    setData(d => ({ ...d, appointments: d.appointments.map(a => a.id === id ? { ...a, status } : a) }));
-    showToast(status === "confirmed" ? "Cita confirmada" : "Cita cancelada");
-  };
+  const [cancelModal, setCancelModal] = useState(null);
+
+const updateStatus = async (id, status, motivo = "") => {
+  await updateCita(id, { status });
+  const cita = data.appointments.find(a => a.id === id);
+  setData(d => ({ ...d, appointments: d.appointments.map(a => a.id === id ? { ...a, status } : a) }));
+  
+  if (status === "confirmed" && cita?.client_phone) {
+    await enviarConfirmacionCita({
+      client_name: cita.clientName || cita.client_name,
+      email: cita.client_email,
+      phone: cita.client_phone,
+      date: cita.date,
+      time: cita.time,
+      service: cita.service,
+      barber: cita.barber_name,
+      price: cita.price?.toLocaleString(),
+    });
+  }
+
+  if (status === "cancelled" && cita?.client_phone) {
+    await enviarCancelacionCita({
+      client_name: cita.clientName || cita.client_name,
+      email: cita.client_email,
+      phone: cita.client_phone,
+      date: cita.date,
+      time: cita.time,
+      service: cita.service,
+      barber: cita.barber_name,
+      price: cita.price?.toLocaleString(),
+      motivo: motivo || "Evento externo",
+    });
+  }
+
+  showToast(status === "confirmed" ? "Cita confirmada ✓" : "Cita cancelada");
+  setCancelModal(null);
+};
 
   const deleteApp = async (id) => {
     await deleteCita(id);
@@ -402,10 +435,10 @@ function Agenda({ data, setData, showToast }) {
                 </div>
               </div>
               <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                {app.status === "pending" && <button className="btn btn-gold" style={{ padding: "6px 14px", fontSize: 11 }} onClick={() => updateStatus(app.id, "confirmed")}>CONFIRMAR</button>}
-                {app.status !== "cancelled" && <button className="btn btn-outline" style={{ padding: "6px 14px", fontSize: 11 }} onClick={() => updateStatus(app.id, "cancelled")}>CANCELAR</button>}
-                <button className="btn btn-danger" style={{ padding: "6px 14px", fontSize: 11 }} onClick={() => deleteApp(app.id)}>ELIMINAR</button>
-              </div>
+  {app.status === "pending" && <button className="btn btn-gold" style={{ padding: "6px 14px", fontSize: 11 }} onClick={() => updateStatus(app.id, "confirmed")}>CONFIRMAR</button>}
+  {app.status !== "cancelled" && <button className="btn btn-outline" style={{ padding: "6px 14px", fontSize: 11 }} onClick={() => setCancelModal(app)}>CANCELAR</button>}
+  <button className="btn btn-danger" style={{ padding: "6px 14px", fontSize: 11 }} onClick={() => deleteApp(app.id)}>ELIMINAR</button>
+</div>
             </div>
           );
         })
@@ -445,10 +478,33 @@ function Agenda({ data, setData, showToast }) {
           </div>
         </div>
       )}
+      {cancelModal && (
+        <div className="modal-bg" onClick={e => e.target === e.currentTarget && setCancelModal(null)}>
+          <div className="modal">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+              <div style={{ fontSize: 20, letterSpacing: 2 }}>CANCELAR CITA</div>
+              <button style={{ background: "none", border: "none", color: "#888", cursor: "pointer" }} onClick={() => setCancelModal(null)}><Icon name="x" /></button>
+            </div>
+            <div style={{ marginBottom: 16, fontFamily: "Lato", fontSize: 13, color: "#888" }}>
+              ¿Estás seguro que deseas cancelar la cita de <strong style={{ color: "#f0e6d3" }}>{cancelModal.clientName || cancelModal.client_name}</strong>?
+            </div>
+            <div style={{ marginBottom: 20 }}>
+              <label className="label">MOTIVO DE CANCELACIÓN</label>
+              <textarea className="input" rows={3} style={{ resize: "none" }} placeholder="Ej: Barbero no disponible, emergencia, etc." id="cancel-motivo" />
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => setCancelModal(null)}>VOLVER</button>
+              <button className="btn btn-danger" style={{ flex: 1 }} onClick={() => {
+                const motivo = document.getElementById("cancel-motivo").value;
+                updateStatus(cancelModal.id, "cancelled", motivo);
+              }}>CONFIRMAR CANCELACIÓN</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
 // ============================================================
 // CLIENTES
 // ============================================================
@@ -632,10 +688,11 @@ function Clientes({ data, setData, showToast }) {
             <button className="btn btn-gold" style={{ width: "100%" }} onClick={addClient}>REGISTRAR CLIENTE</button>
           </div>
         </div>
-      )}
-    </div>
+     )}
+   </div>
   );
 }
+      
 
 // ============================================================
 // POS - CAJA REGISTRADORA

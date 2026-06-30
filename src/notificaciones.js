@@ -81,4 +81,24 @@ export const enviarNotificaciones = async ({ client_name, phone, email, date, ti
   }
 
   await Promise.all(promises);
+ 
+};
+ // ── CONFIRMACIÓN DE CITA ───────────────────────────────────
+export const enviarConfirmacionCita = async ({ client_name, email, phone, date, time, service, barber, price }) => {
+  await enviarEmailA({
+    to_email: email,
+    to_name: client_name,
+    message: `¡Tu cita ha sido confirmada! Te esperamos en Pereira Barber.`,
+    date, time, service, barber_name: barber, price
+  });
+};
+
+// ── CANCELACIÓN DE CITA ────────────────────────────────────
+export const enviarCancelacionCita = async ({ client_name, email, phone, date, time, service, barber, price, motivo }) => {
+  await enviarEmailA({
+    to_email: email,
+    to_name: client_name,
+    message: `Tu cita ha sido cancelada. Motivo: ${motivo}. Disculpa los inconvenientes, puedes reagendar cuando quieras.`,
+    date, time, service, barber_name: barber, price
+  });
 };

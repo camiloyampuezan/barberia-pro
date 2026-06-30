@@ -3,21 +3,19 @@ import { enviarNotificaciones } from './notificaciones';
 import { addCita, getCitasByDate } from './db';
 import logo from "./assets/logo.jpeg";
 import barbero1 from "./assets/barbero1.jpg"
-import barbero2 from "./assets/barbero2.jpg"
+//import barbero2 from "./assets/barbero2.jpg"
 
 // ─── DATA ────────────────────────────────────────────────────
 const SERVICES = [
-  { id: 1, name: "Corte Clásico", price: 20000, duration: 30, desc: "Corte tradicional a tijera o máquina" },
-  { id: 2, name: "Corte + Barba", price: 35000, duration: 45, desc: "Corte completo más arreglo de barba" },
+  { id: 1, name: "Corte Premium", price: 25000, duration: 30, desc: "Corte premium" },
+  { id: 2, name: "Corte + Barba", price: 30000, duration: 45, desc: "Corte completo mas arreglo de barba" },
   { id: 3, name: "Arreglo de Barba", price: 18000, duration: 30, desc: "Perfilado y arreglo profesional" },
-  { id: 4, name: "Afeitado Tradicional", price: 22000, duration: 40, desc: "Afeitado con navaja y toalla caliente" },
-  { id: 5, name: "Corte Niños", price: 15000, duration: 25, desc: "Para los más pequeños del hogar" },
-  { id: 6, name: "Keratina", price: 80000, duration: 90, desc: "Tratamiento alisado y nutrición" },
+  { id: 4, name: "Corte premium completo", price: 22000, duration: 40, desc: "Corte de cabello premium completo con arreglo de barba y lavado" },
 ];
 
 const BARBERS = [
-  { id: 1, name: "Miguel Ángel Torres", role: "Barbero Senior", exp: "8 años de experiencia", image: barbero1, initials: "MA", specialties: ["Corte Clásico", "Afeitado Tradicional", "Keratina"] },
-  { id: 2, name: "Juan Pablo Herrera", role: "Barbero", exp: "4 años de experiencia",image: barbero2, initials: "JP", specialties: ["Corte + Barba", "Arreglo de Barba", "Corte Niños"] },
+  { id: 1, name: "Deivy pereira", role: "Barbero Senior", exp: "8 años de experiencia", image: barbero1, initials: "MA", specialties: ["Corte Clásico", "Afeitado Tradicional"] },
+  //{ id: 2, name: "Juan Pablo Herrera", role: "Barbero", exp: "4 años de experiencia",image: barbero2, initials: "JP", specialties: ["Corte + Barba", "Arreglo de Barba", "Corte Niños"] },
 ];
 
 const HOURS = ["09:00","09:30","10:00","10:30","11:00","11:30","12:00","02:00","02:30","03:00","03:30","04:00","04:30","05:00","05:30",];
@@ -28,7 +26,7 @@ const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto
 function getNext14Days() {
   const days = [];
   const base = new Date();
-  for (let i = 0; i <= 30; i++) {
+  for (let i = 1; i <= 30; i++) {
     const d = new Date(base);
     d.setDate(base.getDate() + i);
     const y = d.getFullYear();
@@ -314,9 +312,13 @@ export default function BookingPage() {
         margin: "0 auto"
       }}
     >
-      Más que un corte de cabello, ofrecemos una experiencia de estilo,
-      comodidad y atención personalizada. Nuestro equipo está comprometido
-      con brindarte un servicio de calidad para que siempre luzcas tu mejor versión.
+      Bienvenido a una experiencia de barbería exclusiva.
+
+Tu estilo habla por ti, y cada detalle cuenta. Aquí transformamos cada corte en una expresión de confianza, personalidad y actitud, combinando precisión, profesionalismo y las últimas tendencias en barbería.
+
+Ya sea que busques renovar tu imagen o mantener tu estilo favorito, nuestro compromiso es brindarte un servicio de excelencia en un ambiente cómodo y moderno.
+
+Descubre el arte de la barbería moderna y lleva tu imagen al siguiente nivel.
     </p>
 
     <div style={{ marginTop: 15 }}>
