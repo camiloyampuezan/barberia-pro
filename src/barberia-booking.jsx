@@ -132,7 +132,7 @@ export default function BookingPage() {
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         .sans { font-family: 'DM Sans', sans-serif; }
-        .btn-primary { background: #000000; color: #ffffff; border: none; padding: 14px 32px; border-radius: 4px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; transition: all .2s; width: 100%; }
+        .btn-primary { background: #706e6ec8; color: #ffffff; border: none; padding: 14px 32px; border-radius: 4px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; transition: all .2s; width: 100%; }
         .btn-primary:hover { background: #bbb09f; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,18,9,0.2); }
         .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
         .btn-back { background: none; border: 1px solid #d4c4a8; color: #8a7560; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 12px; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; transition: all .2s; }
