@@ -11,6 +11,10 @@ const SERVICES = [
   { id: 2, name: "Corte + Barba", price: 30000, duration: 45, desc: "Corte completo mas arreglo de barba" },
   { id: 3, name: "Arreglo de Barba", price: 18000, duration: 30, desc: "Perfilado y arreglo profesional" },
   { id: 4, name: "Corte premium completo", price: 22000, duration: 40, desc: "Corte de cabello premium completo con arreglo de barba y lavado" },
+  { id: 1, name: "Corte Premium", price: 25000, duration: 30, desc: "Corte premium" },
+  { id: 2, name: "Corte + Barba", price: 30000, duration: 45, desc: "Corte completo mas arreglo de barba" },
+  { id: 3, name: "Arreglo de Barba", price: 18000, duration: 30, desc: "Perfilado y arreglo profesional" },
+  { id: 4, name: "Corte premium completo", price: 22000, duration: 40, desc: "Corte de cabello premium completo con arreglo de barba y lavado" },
 ];
 
 const BARBERS = [
