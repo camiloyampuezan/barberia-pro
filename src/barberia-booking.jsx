@@ -11,10 +11,10 @@ const SERVICES = [
   { id: 2, name: "Corte + Barba", price: 30000, duration: 45, desc: "Corte completo mas arreglo de barba" },
   { id: 3, name: "Delineado de Barba", price: 12000, duration: 30, desc: "Perfilado y arreglo de barba" },
   { id: 4, name: "Delineado de Barba Premium", price: 15000, duration: 40, desc: "Perfilado y arreglo de barba premium" },
-  { id: 1, name: "Limpieza Facial", price: 20000, duration: 30, desc: "Limpieza facial" },
-  { id: 2, name: "Limpieza de Cejas", price: 4000, duration: 45, desc: "Limpieza de cejas" },
-  { id: 3, name: "Afeitado de Barba", price: 18000, duration: 30, desc: "Afeitado de Barba" },
-  { id: 4, name: "Rayitos Blanco o Platinado", price: 150000, duration: 40, desc: "Rayitos Blanco y Platinado" },
+  { id: 5, name: "Limpieza Facial", price: 20000, duration: 30, desc: "Limpieza facial" },
+  { id: 6, name: "Limpieza de Cejas", price: 4000, duration: 45, desc: "Limpieza de cejas" },
+  { id: 7, name: "Afeitado de Barba", price: 18000, duration: 30, desc: "Afeitado de Barba" },
+  { id: 8, name: "Rayitos Blanco o Platinado", price: 150000, duration: 40, desc: "Rayitos Blanco y Platinado" },
 ];
 
 const BARBERS = [
@@ -127,13 +127,13 @@ export default function BookingPage() {
   };
 
   return (
-    <div style={{ fontFamily: "'Playfair Display', Georgia, serif", background: "#706e6ec8", minHeight: "100vh", color: "#000000" }}>
+    <div style={{ fontFamily: "'Playfair Display', Georgia, serif", background: "#000000", minHeight: "100vh", color: "#c61313" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         .sans { font-family: 'DM Sans', sans-serif; }
-        .btn-primary { background: #706e6ec8; color: #ffffff; border: none; padding: 14px 32px; border-radius: 4px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; transition: all .2s; width: 100%; }
-        .btn-primary:hover { background: #bbb09f; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,18,9,0.2); }
+        .btn-primary { background: #fffbf5; color: #000000; border: none; padding: 14px 32px; border-radius: 4px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; transition: all .2s; width: 100%; }
+        .btn-primary:hover { background: #cf0b0b; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(155, 255, 4, 0.2); }
         .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
         .btn-back { background: none; border: 1px solid #d4c4a8; color: #8a7560; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 12px; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; transition: all .2s; }
         .btn-back:hover { border-color: #1a1209; color: #1a1209; }
@@ -227,21 +227,21 @@ export default function BookingPage() {
       fontFamily: "DM Sans",
       marginBottom: 4
     }}>
-      Paso {step} de 4
+      Paso {step} de 5
     </div>
 
     {/* BARRA PROGRESO */}
     <div style={{
       width: 80,
       height: 6,
-      background: "#FFD700",
+      background: "#ce0909",
       borderRadius: 10,
       overflow: "hidden"
     }}>
       <div style={{
         width: `${(step / 4) * 100}%`,
         height: "100%",
-        background: "linear-gradient(90deg, #ffffff, #FFD700)",
+        background: "linear-gradient(90deg, #ffffff, #ce0909)",
         transition: "width 0.3s ease"
       }} />
     </div>
@@ -267,7 +267,7 @@ export default function BookingPage() {
 </div>
 
       {/* DECORATIVE BAR */}
-      <div style={{ height: 3, background: "#FFD700" }} />
+      <div style={{ height: 3, background: "#ce0909" }} />
 
       <div style={{ maxWidth: 560, margin: "0 auto", padding: "32px 20px 60px" }}>
 
