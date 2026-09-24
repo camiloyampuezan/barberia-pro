@@ -2,40 +2,51 @@ import { useState, useEffect } from "react";
 import { enviarNotificaciones } from './notificaciones';
 import { addCita, getCitasByDate } from './db';
 import logo from "./assets/logo.jpeg";
-import barbero1 from "./assets/barbero1.jpg"
-//import barbero2 from "./assets/barbero2.jpg"
+import barbero1 from "./assets/barbero1.jpg";
+//import barbero2 from "./assets/barbero2.jpg";
 
 // ─── DATA ────────────────────────────────────────────────────
 const SERVICES = [
-  { id: 1, name: "Corte de Cabello", price: 25000, duration: 30, desc: "Corte cabello " },
-  { id: 2, name: "Corte + Barba", price: 30000, duration: 45, desc: "Corte completo mas arreglo de barba" },
-  { id: 3, name: "Delineado de Barba", price: 12000, duration: 30, desc: "Perfilado y arreglo de barba" },
-  { id: 4, name: "Delineado de Barba Premium", price: 15000, duration: 40, desc: "Perfilado y arreglo de barba premium" },
-  { id: 5, name: "Limpieza Facial", price: 20000, duration: 30, desc: "Limpieza facial" },
-  { id: 6, name: "Limpieza de Cejas", price: 4000, duration: 45, desc: "Limpieza de cejas" },
-  { id: 7, name: "Afeitado de Barba", price: 18000, duration: 30, desc: "Afeitado de Barba" },
-  { id: 8, name: "Rayitos Blanco o Platinado", price: 150000, duration: 40, desc: "Rayitos Blanco y Platinado" },
+  { id: 1, cat: "Cabello", name: "Corte de Cabello", price: 25000, duration: 30, desc: "Corte cabello" },
+  { id: 2, cat: "Cabello", name: "Corte + Barba", price: 30000, duration: 45, desc: "Corte completo más arreglo de barba" },
+  { id: 3, cat: "Barba", name: "Delineado de Barba", price: 12000, duration: 30, desc: "Perfilado y arreglo de barba" },
+  { id: 4, cat: "Barba", name: "Delineado de Barba Premium", price: 15000, duration: 40, desc: "Perfilado y arreglo de barba premium" },
+  { id: 5, cat: "Rostro", name: "Limpieza Facial", price: 20000, duration: 30, desc: "Limpieza facial" },
+  { id: 6, cat: "Rostro", name: "Limpieza de Cejas", price: 4000, duration: 45, desc: "Limpieza de cejas" },
+  { id: 7, cat: "Barba", name: "Afeitado de Barba", price: 18000, duration: 30, desc: "Afeitado de barba" },
+  { id: 8, cat: "Color", name: "Rayitos Blanco o Platinado", price: 150000, duration: 40, desc: "Rayitos blanco y platinado" },
 ];
+
+const CATEGORIES = ["Cabello", "Barba", "Rostro", "Color"];
 
 const BARBERS = [
-  { id: 1, name: "Deivy pereira", role: "Barbero Senior", exp: "8 años de experiencia", image: barbero1, initials: "MA", specialties: ["Corte Clásico", "Afeitado Tradicional"] },
-  //{ id: 2, name: "Juan Pablo Herrera", role: "Barbero", exp: "4 años de experiencia",image: barbero2, initials: "JP", specialties: ["Corte + Barba", "Arreglo de Barba", "Corte Niños"] },
+  { id: 1, name: "Deivy Pereira", role: "Barbero Senior", exp: "8 años de experiencia", image: barbero1, initials: "DP", specialties: ["Corte Clásico", "Afeitado Tradicional"] },
+  //{ id: 2, name: "Juan Pablo Herrera", role: "Barbero", exp: "4 años de experiencia", image: barbero2, initials: "JP", specialties: ["Corte + Barba", "Arreglo de Barba", "Corte Niños"] },
 ];
 
-const HOURS = ["09:00","09:30","10:00","10:30","11:00","11:30","12:00","02:00","02:30","03:00","03:30","04:00","04:30","05:00","05:30",];
+// Horas en formato 24h (así la comparación con getHours() funciona bien)
+const HOURS = [
+  "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00",
+  "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30",
+];
 
-const DAYS = ["DOM","LUN","MAR","MIÉ","JUE","VIE","SÁB"];
-const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const DAYS = ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"];
+const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
-function getNext14Days() {
+const TOTAL_STEPS = 5;
+const DAYS_AHEAD = 30;
+// 0 = permite citas hoy (las horas ya pasadas se bloquean solas). Cambia a 1 para empezar desde mañana.
+const FIRST_DAY_OFFSET = 0;
+
+function getNextDays() {
   const days = [];
   const base = new Date();
-  for (let i = 1; i <= 30; i++) {
+  for (let i = FIRST_DAY_OFFSET; i < FIRST_DAY_OFFSET + DAYS_AHEAD; i++) {
     const d = new Date(base);
     d.setDate(base.getDate() + i);
     const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
     const iso = `${y}-${m}-${day}`;
     days.push({ iso, day: DAYS[d.getDay()], num: d.getDate(), month: MONTHS[d.getMonth()], disabled: d.getDay() === 0 });
   }
@@ -62,69 +73,92 @@ const Ico = ({ n, s = 18 }) => {
 
 // ─── MAIN ────────────────────────────────────────────────────
 export default function BookingPage() {
-  const [step, setStep] = useState(1); // 1=service 2=barber 3=datetime 4=form 5=confirm
+  // 1=servicio 2=barbero 3=fecha/hora 4=datos 5=confirmación
+  const [step, setStep] = useState(1);
   const [selected, setSelected] = useState({ service: null, barber: null, date: null, time: null });
   const [form, setForm] = useState({ name: "", phone: "", email: "", notes: "" });
   const [booked, setBooked] = useState(false);
-  useEffect(() => {
-  if (selected.date) {
-    getCitasByDate(selected.date).then(citas => {
-      console.log("Citas encontradas:", citas);
-      const slots = citas.map(c => c.time);
-      console.log("Slots ocupados:", slots);
-      setBookedSlots(slots);
-    });
-  }
-}, [selected.date]);
-  const [loading, setLoading] = useState(false); // eslint-disable-line
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [bookedSlots, setBookedSlots] = useState([]);
-  const days = getNext14Days();
+  const [confirmId, setConfirmId] = useState("");
+
+  const days = getNextDays();
+
+  // Cargar horas ocupadas cuando cambia la fecha
+  useEffect(() => {
+    if (!selected.date) return;
+    let cancelled = false;
+    setBookedSlots([]);
+    getCitasByDate(selected.date)
+      .then(citas => {
+        if (cancelled) return;
+        setBookedSlots((citas || []).map(c => c.time));
+      })
+      .catch(err => console.error("Error cargando citas:", err));
+    return () => { cancelled = true; };
+  }, [selected.date]);
 
   const next = () => setStep(s => s + 1);
   const back = () => setStep(s => s - 1);
 
-
-
   const confirm = async () => {
-    if (!form.name || !form.phone) return;
+    if (!form.name || !form.phone || loading) return;
+    setLoading(true);
+    setError("");
 
-    await addCita({
-      client_name: form.name,
-      client_phone: form.phone,
-      barber_id: selected.barber?.id,
-      barber_name: selected.barber?.name,
-      service: selected.service?.name,
-      date: selected.date,
-      time: selected.time,
-      duration: selected.service?.duration,
-      price: selected.service?.price,
-      status: "pending",
-      notes: form.notes,
-    });
+    try {
+      await addCita({
+        client_name: form.name,
+        client_phone: form.phone,
+        barber_id: selected.barber?.id,
+        barber_name: selected.barber?.name,
+        service: selected.service?.name,
+        date: selected.date,
+        time: selected.time,
+        duration: selected.service?.duration,
+        price: selected.service?.price,
+        status: "pending",
+        notes: form.notes,
+      });
 
-    await enviarNotificaciones({
-      client_name: form.name,
-      phone: form.phone,
-      email: form.email,
-      date: selected.date,
-      time: selected.time,
-      service: selected.service?.name,
-      barber: selected.barber?.name,
-      barber_email: selected.barber?.id === 1 
-        ? process.env.REACT_APP_BARBER_1_EMAIL 
-        : process.env.REACT_APP_BARBER_2_EMAIL,
-      price: selected.service?.price.toLocaleString(),
-    });
+      await enviarNotificaciones({
+        client_name: form.name,
+        phone: form.phone,
+        email: form.email,
+        date: selected.date,
+        time: selected.time,
+        service: selected.service?.name,
+        barber: selected.barber?.name,
+        barber_email: selected.barber?.id === 1
+          ? process.env.REACT_APP_BARBER_1_EMAIL
+          : process.env.REACT_APP_BARBER_2_EMAIL,
+        price: selected.service?.price.toLocaleString(),
+      });
 
-    setBooked(true);
-    setStep(5);
+      setConfirmId(Date.now().toString().slice(-6));
+      setBooked(true);
+      setStep(5);
+    } catch (err) {
+      console.error("Error al confirmar la cita:", err);
+      setError("No pudimos agendar tu cita. Intenta de nuevo en un momento.");
+    } finally {
+      setLoading(false);
+    }
   };
-
 
   const reset = () => {
-    setStep(1); setSelected({ service: null, barber: null, date: null, time: null });
-    setForm({ name: "", phone: "", email: "", notes: "" }); setBooked(false);
+    setStep(1);
+    setSelected({ service: null, barber: null, date: null, time: null });
+    setForm({ name: "", phone: "", email: "", notes: "" });
+    setBookedSlots([]);
+    setBooked(false);
+    setError("");
   };
+
+  // Fecha y hora actuales (para bloquear horas pasadas de hoy)
+  const now = new Date();
+  const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
   return (
     <div style={{ fontFamily: "'Playfair Display', Georgia, serif", background: "#000000", minHeight: "100vh", color: "#c61313" }}>
@@ -137,9 +171,27 @@ export default function BookingPage() {
         .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
         .btn-back { background: none; border: 1px solid #d4c4a8; color: #8a7560; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 12px; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; transition: all .2s; }
         .btn-back:hover { border-color: #1a1209; color: #1a1209; }
-        .service-card { background: white; border: 1.5px solid #aa5e00; border-radius: 8px; padding: 18px; cursor: pointer; transition: all .2s; position: relative; }
-        .service-card:hover { border-color: #c8a060; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,160,96,0.15); }
-        .service-card.selected { border-color: #c8a060; background: #fffbf5; box-shadow: 0 0 0 3px rgba(200,160,96,0.15); }
+        .welcome { background: #0f0f0f; border: 1px solid rgba(200,160,96,0.55); border-radius: 12px; padding: 28px 24px; position: sticky; top: 20px; }
+        .welcome-list { display: flex; flex-direction: column; gap: 16px; margin: 24px 0 20px; }
+        .welcome-item { display: flex; gap: 14px; align-items: flex-start; }
+        .welcome-icon { width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(200,160,96,0.6); color: #c8a060; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .welcome-foot { display: flex; gap: 10px; align-items: center; border-top: 1px solid #2a2a2a; padding-top: 16px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: #cdbfa8; line-height: 1.5; }
+        .svc-layout { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 32px; align-items: start; }
+        .cat-title { font-size: 20px; font-weight: 600; color: #ffffff; display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+        .cat-title::after { content: ""; flex: 1; height: 1px; background: #4a1a1a; }
+        .svc { background: #fffbf5; color: #1a1209; border: 1.5px solid #e8ddd0; border-radius: 10px; padding: 16px 18px; cursor: pointer; display: flex; align-items: center; gap: 14px; transition: border-color .2s, box-shadow .2s, background .2s; }
+        .svc:hover { border-color: #c8a060; }
+        .svc:focus-visible { outline: 2px solid #c8a060; outline-offset: 2px; }
+        .svc.selected { background: #ffffff; border-color: #ce0909; box-shadow: 0 0 0 3px rgba(206,9,9,0.22); }
+        .svc-check { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid #cdbfa8; color: #ffffff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .2s; }
+        .svc.selected .svc-check { background: #ce0909; border-color: #ce0909; }
+        .svc-time { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; background: #f5ede0; color: #6f5d49; border-radius: 20px; padding: 3px 10px; font-family: 'DM Sans', sans-serif; font-size: 12px; }
+        .svc-price { font-size: 19px; font-weight: 700; color: #8a5a12; white-space: nowrap; }
+        .action-bar { position: sticky; bottom: 12px; z-index: 5; display: flex; align-items: center; gap: 14px; background: #111111; border: 1px solid #c8a060; border-radius: 12px; padding: 12px 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+        @media (max-width: 820px) {
+          .svc-layout { grid-template-columns: 1fr; gap: 24px; }
+          .welcome { position: static; }
+        }
         .barber-card { background: white; border: 1.5px solid #e8ddd0; border-radius: 10px; padding: 22px; cursor: pointer; transition: all .25s; text-align: center; }
         .barber-card:hover { border-color: #c8a060; transform: translateY(-3px); box-shadow: 0 12px 32px rgba(200,160,96,0.2); }
         .barber-card.selected { border-color: #c8a060; background: #fffbf5; box-shadow: 0 0 0 3px rgba(200,160,96,0.15); }
@@ -148,8 +200,9 @@ export default function BookingPage() {
         .day-chip.selected { background: #1a1209; border-color: #1a1209; color: white; }
         .day-chip.disabled { opacity: 0.35; cursor: not-allowed; }
         .time-chip { background: white; border: 1.5px solid #d8e8d0; border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; transition: all .15s; font-family: 'DM Sans', sans-serif; font-size: 13px; }
-        .time-chip:hover { border-color: #c8a060; color: #c8a060; }
+        .time-chip:hover:not(.disabled) { border-color: #c8a060; color: #c8a060; }
         .time-chip.selected { background: #1a1209; border-color: #1a1209; color: white; }
+        .time-chip.disabled { opacity: 0.35; cursor: not-allowed; }
         .input { background: white; border: 1.5px solid #e0d4c0; border-radius: 6px; padding: 12px 16px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: #1a1209; width: 100%; outline: none; transition: border .2s; }
         .input:focus { border-color: #c8a060; }
         .step-dot { width: 8px; height: 8px; border-radius: 50%; background: #d4c4a8; transition: all .3s; }
@@ -164,230 +217,212 @@ export default function BookingPage() {
         .tag { background: #f5ede0; color: #a07840; border-radius: 20px; padding: 3px 12px; font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: 1px; display: inline-block; }
       `}</style>
 
+      {/* HEADER */}
       <div style={{
-  background: "linear-gradient(135deg, #000000, #000000)",
-  padding: "18px 20px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  boxShadow: "0 6px 24px rgba(0,0,0,0.25)"
-}}>
-
-  {/* LEFT: LOGO + BRAND */}
-  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-
-    {/* LOGO REAL */}
-    <div style={{
-  width: 122,
-  height: 122,
-  borderRadius: 120,
-  background: "#fff",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  overflow: "hidden"
-}}>
-  <img 
-    src={logo} 
-    alt="Logo barbería"
-    style={{ width: "100%", objectFit: "contain" }}
-  />
-</div>
-    
-
-    {/* TEXT */}
-    <div>
-      <div style={{
-        fontSize: 38,
-        letterSpacing: 4,
-        color: "#ffffff",
-        fontWeight: 600
+        background: "linear-gradient(135deg, #000000, #000000)",
+        padding: "18px 20px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        flexWrap: "wrap",
+        gap: 16,
+        boxShadow: "0 6px 24px rgba(0,0,0,0.25)",
       }}>
-        PEREIRA BARBER
+        {/* LEFT: LOGO + BRAND */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{
+            width: 122,
+            height: 122,
+            borderRadius: 120,
+            background: "#fff",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+            flexShrink: 0,
+          }}>
+            <img src={logo} alt="Logo barbería" style={{ width: "100%", objectFit: "contain" }} />
+          </div>
+
+          <div>
+            <div style={{ fontSize: 38, letterSpacing: 4, color: "#ffffff", fontWeight: 600 }}>
+              PEREIRA BARBER
+            </div>
+            <div style={{ fontSize: 15, letterSpacing: 2, color: "#ffffff", fontFamily: "DM Sans" }}>
+              RESERVA EN SEGUNDOS
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT: STEP + PROGRESS */}
+        <div style={{ textAlign: "right" }}>
+          <div style={{ fontSize: 12, color: "#ffffff", fontFamily: "DM Sans", marginBottom: 4 }}>
+            Paso {step} de {TOTAL_STEPS}
+          </div>
+
+          <div style={{ width: 80, height: 6, background: "#ce0909", borderRadius: 10, overflow: "hidden", marginLeft: "auto" }}>
+            <div style={{
+              width: `${(step / TOTAL_STEPS) * 100}%`,
+              height: "100%",
+              background: "linear-gradient(90deg, #ffffff, #ce0909)",
+              transition: "width 0.3s ease",
+            }} />
+          </div>
+
+          <div style={{ display: "flex", gap: 5, marginTop: 6, justifyContent: "flex-end" }}>
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} style={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: step === i ? "#fff" : step > i ? "#ce0909" : "#555555",
+                transition: "all 0.3s",
+              }} />
+            ))}
+          </div>
+        </div>
       </div>
-
-      <div style={{
-        fontSize: 15,
-        letterSpacing: 2,
-        color: "#ffffff",
-        fontFamily: "DM Sans"
-      }}>
-        RESERVA EN SEGUNDOS
-      </div>
-    </div>
-  </div>
-
-  {/* RIGHT: STEP + PROGRESS */}
-  <div style={{ textAlign: "right" }}>
-
-    {/* TEXTO DE PASO */}
-    <div style={{
-      fontSize: 12,
-      color: "#ffffff",
-      fontFamily: "DM Sans",
-      marginBottom: 4
-    }}>
-      Paso {step} de 5
-    </div>
-
-    {/* BARRA PROGRESO */}
-    <div style={{
-      width: 80,
-      height: 6,
-      background: "#ce0909",
-      borderRadius: 10,
-      overflow: "hidden"
-    }}>
-      <div style={{
-        width: `${(step / 4) * 100}%`,
-        height: "100%",
-        background: "linear-gradient(90deg, #ffffff, #ce0909)",
-        transition: "width 0.3s ease"
-      }} />
-    </div>
-
-    {/* DOTS */}
-    <div style={{ display: "flex", gap: 5, marginTop: 6, justifyContent: "flex-end" }}>
-      {[1,2,3,4].map(i => (
-        <div key={i} style={{
-          width: 6,
-          height: 6,
-          borderRadius: "50%",
-          background: step === i 
-            ? "#fff" 
-            : step > i 
-              ? "#000000" 
-              : "#000000",
-          transition: "all 0.3s"
-        }} />
-      ))}
-    </div>
-
-  </div>
-</div>
 
       {/* DECORATIVE BAR */}
       <div style={{ height: 3, background: "#ce0909" }} />
 
-      <div style={{ maxWidth: 560, margin: "0 auto", padding: "32px 20px 60px" }}>
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "32px 20px 60px" }}>
 
         {/* ── STEP 1: SERVICE ── */}
         {step === 1 && (
           <div className="fade">
-            <div style={{ textAlign: "center", marginBottom: 32 }}>
-              <div className="ornament">✦ ✦ ✦</div>
-              <h1 style={{ fontSize: 30, fontWeight: 700, marginTop: 12, marginBottom: 8, letterSpacing: 1 }}>¿Qué servicio deseas?</h1>
-              <p style={{ color: "#8a7560", fontFamily: "DM Sans", fontSize: 14 }}>Selecciona uno de nuestros servicios</p>
+            <div style={{ textAlign: "right", marginBottom: 32 }}>
+              <div className="ornament"> ✦ </div>
+              <h1 style={{ fontSize: 30, fontWeight: 700, marginTop: 12, marginBottom: 8, letterSpacing: 1 }}>"Elige tu experiencia de corte"</h1>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
 
-  {/* Información de la barbería */}
-  <div
-    style={{
-      background: "white",
-      border: "1.5px solid #e8ddd0",
-      borderRadius: "10px",
-      padding: "24px",
-      marginBottom: "10px",
-      textAlign: "center"
-    }}
-  >
-    <div className="ornament">✦ ✦ ✦</div>
+            <div className="svc-layout">
 
-    <h2
-      style={{
-        fontSize: 24,
-        marginTop: 10,
-        marginBottom: 10,
-        color: "#1a1209"
-      }}
-    >
-      Bienvenido a Nuestra Barbería
-    </h2>
+              {/* Izquierda: tarjeta de bienvenida */}
+              <aside className="welcome">
+                <div className="ornament" style={{ textAlign: "center" }}>✦ </div>
 
-    <p
-      style={{
-        fontFamily: "DM Sans",
-        color: "#8a7560",
-        fontSize: 14,
-        lineHeight: 1.7,
-        maxWidth: "700px",
-        margin: "0 auto"
-      }}
-    >
-      Bienvenido a una experiencia de barbería exclusiva.
+                <h2 style={{ fontSize: 26, lineHeight: 1.25, textAlign: "center", color: "#ffffff", margin: "10px 0 14px" }}>
+                  Bienvenido a nuestra barbería
+                </h2>
 
-Tu estilo habla por ti, y cada detalle cuenta. Aquí transformamos cada corte en una expresión de confianza, personalidad y actitud, combinando precisión, profesionalismo y las últimas tendencias en barbería.
+                <p style={{ fontFamily: "DM Sans", fontSize: 15, lineHeight: 1.7, color: "#f0e6d6", textAlign: "center" }}>
+                  Tu estilo habla por ti y cada detalle cuenta. Aquí cada corte es una expresión de confianza, personalidad y actitud.
+                </p>
 
-Ya sea que busques renovar tu imagen o mantener tu estilo favorito, nuestro compromiso es brindarte un servicio de excelencia en un ambiente cómodo y moderno.
-
-Descubre el arte de la barbería moderna y lleva tu imagen al siguiente nivel.
-    </p>
-
-    <div style={{ marginTop: 15 }}>
-      <span className="tag">✂ Calidad • Estilo • Profesionalismo</span>
-    </div>
-  </div>
-</div>
-              {SERVICES.map(s => (
-                <div key={s.id} className={`service-card ${selected.service?.id === s.id ? "selected" : ""}`} onClick={() => setSelected(p => ({ ...p, service: s }))}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{s.name}</div>
-                      <div style={{ fontSize: 13, color: "#8a7560", fontFamily: "DM Sans" }}>{s.desc}</div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8 }}>
-                        <span style={{ color: "#a09080" }}><Ico n="clock" s={13} /></span>
-                        <span style={{ fontSize: 12, color: "#a09080", fontFamily: "DM Sans" }}>{s.duration} min</span>
+                <div className="welcome-list">
+                  {[
+                    { icon: "scissors", title: "Calidad", text: "Cortes precisos y acabados limpios." },
+                    { icon: "star", title: "Estilo", text: "Las últimas tendencias, adaptadas a ti." },
+                    { icon: "user", title: "Profesionalismo", text: "Atención de barberos con experiencia." },
+                  ].map(item => (
+                    <div key={item.title} className="welcome-item">
+                      <span className="welcome-icon"><Ico n={item.icon} s={18} /></span>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 600, color: "#ffffff" }}>{item.title}</div>
+                        <div style={{ fontFamily: "DM Sans", fontSize: 13, color: "#cdbfa8", lineHeight: 1.5 }}>{item.text}</div>
                       </div>
                     </div>
-                    <div style={{ textAlign: "right", marginLeft: 16 }}>
-                      <div style={{ fontSize: 20, fontWeight: 700, color: "#c8a060" }}>${s.price.toLocaleString()}</div>
-                      {selected.service?.id === s.id && (
-                        <div style={{ color: "#c8a060", marginTop: 4 }}><Ico n="check" s={18} /></div>
-                      )}
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
+
+                <div className="welcome-foot">
+                  <span style={{ color: "#c8a060", display: "flex" }}><Ico n="calendar" s={16} /></span>
+                  <span>Atendemos de lunes a sábado. Reserva en menos de un minuto.</span>
+                </div>
+              </aside>
+
+              {/* Derecha: servicios agrupados por categoría */}
+              <div>
+                {CATEGORIES.map(cat => (
+                  <section key={cat} style={{ marginBottom: 24 }}>
+                    <h2 className="cat-title">{cat}</h2>
+                    <div role="radiogroup" aria-label={`Servicios de ${cat}`} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {SERVICES.filter(s => s.cat === cat).map(s => {
+                        const isSel = selected.service?.id === s.id;
+                        const pick = () => setSelected(p => ({ ...p, service: s }));
+                        return (
+                          <div
+                            key={s.id}
+                            role="radio"
+                            aria-checked={isSel}
+                            tabIndex={0}
+                            className={`svc ${isSel ? "selected" : ""}`}
+                            onClick={pick}
+                            onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } }}
+                          >
+                            <span className="svc-check">{isSel && <Ico n="check" s={13} />}</span>
+
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 16, fontWeight: 600 }}>{s.name}</div>
+                              <div style={{ fontSize: 13, color: "#6f5d49", fontFamily: "DM Sans", marginTop: 2 }}>{s.desc}</div>
+                              <div className="svc-time">
+                                <Ico n="clock" s={12} /> {s.duration} min
+                              </div>
+                            </div>
+
+                            <div className="svc-price">${s.price.toLocaleString()}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+                ))}
+
+                {/* Barra de acción: resumen + continuar */}
+                <div className="action-bar">
+                  <div style={{ flex: 1, minWidth: 0, fontFamily: "DM Sans" }}>
+                    {selected.service ? (
+                      <>
+                        <div style={{ fontSize: 14, color: "#ffffff", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {selected.service.name}
+                        </div>
+                        <div style={{ fontSize: 12, color: "#cdbfa8" }}>
+                          {selected.service.duration} min · ${selected.service.price.toLocaleString()}
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{ fontSize: 13, color: "#cdbfa8" }}>Selecciona un servicio para continuar</div>
+                    )}
+                  </div>
+                  <button className="btn-primary" style={{ width: "auto", flexShrink: 0, padding: "12px 24px" }} disabled={!selected.service} onClick={next}>
+                    CONTINUAR <Ico n="arrow" s={16} />
+                  </button>
+                </div>
+              </div>
             </div>
-            <button className="btn-primary" disabled={!selected.service} onClick={next}>
-              CONTINUAR <Ico n="arrow" s={16} />
-            </button>
           </div>
         )}
 
         {/* ── STEP 2: BARBER ── */}
         {step === 2 && (
-          <div className="fade">
+          <div className="fade" style={{ maxWidth: 560, margin: "0 auto" }}>
             <div style={{ textAlign: "center", marginBottom: 32 }}>
               <div className="ornament">✦ ✦ ✦</div>
               <h1 style={{ fontSize: 30, fontWeight: 700, marginTop: 12, marginBottom: 8, letterSpacing: 1 }}>Elige tu barbero</h1>
               <p style={{ color: "#ffffff", fontFamily: "DM Sans", fontSize: 14 }}>Nuestros profesionales te atenderán</p>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 28 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 260px))", justifyContent: "center", gap: 14, marginBottom: 28 }}>
               {BARBERS.map(b => (
                 <div key={b.id} className={`barber-card ${selected.barber?.id === b.id ? "selected" : ""}`} onClick={() => setSelected(p => ({ ...p, barber: b }))}>
                   <img
-  src={b.image}
-  alt={b.name}
-  style={{
-    width: 70,
-    height: 70,
-    borderRadius: "50%",
-    objectFit: "cover",
-    margin: "0 auto 12px",
-    display: "block",
-    border: selected.barber?.id === b.id
-      ? "3px solid #c8a060"
-      : "2px solid #e8ddd0"
-  }}
-/>
+                    src={b.image}
+                    alt={b.name}
+                    style={{
+                      width: 70,
+                      height: 70,
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      margin: "0 auto 12px",
+                      display: "block",
+                      border: selected.barber?.id === b.id ? "3px solid #c8a060" : "2px solid #e8ddd0",
+                    }}
+                  />
                   <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>{b.name.split(" ")[0]} {b.name.split(" ")[1]}</div>
                   <div style={{ fontSize: 11, color: "#c8a060", letterSpacing: 1, fontFamily: "DM Sans", textTransform: "uppercase", marginBottom: 6 }}>{b.role}</div>
                   <div style={{ fontSize: 11, color: "#a09080", fontFamily: "DM Sans", marginBottom: 10 }}>{b.exp}</div>
-                  <div style={{ display: "flex", flex: 1, justifyContent: "center" }}>
-                    {[1,2,3,4,5].map(i => <span key={i} style={{ color: "#c8a060", fontSize: 10 }}><Ico n="star" s={10} /></span>)}
+                  <div style={{ display: "flex", justifyContent: "center" }}>
+                    {[1, 2, 3, 4, 5].map(i => <span key={i} style={{ color: "#c8a060", fontSize: 10 }}><Ico n="star" s={10} /></span>)}
                   </div>
                   <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 4, justifyContent: "center" }}>
                     {b.specialties.slice(0, 2).map(sp => <span key={sp} className="tag">{sp}</span>)}
@@ -404,7 +439,7 @@ Descubre el arte de la barbería moderna y lleva tu imagen al siguiente nivel.
 
         {/* ── STEP 3: DATE & TIME ── */}
         {step === 3 && (
-          <div className="fade">
+          <div className="fade" style={{ maxWidth: 560, margin: "0 auto" }}>
             <div style={{ textAlign: "center", marginBottom: 28 }}>
               <div className="ornament">✦ ✦ ✦</div>
               <h1 style={{ fontSize: 30, fontWeight: 700, marginTop: 12, marginBottom: 8, letterSpacing: 1 }}>Fecha y hora</h1>
@@ -415,11 +450,14 @@ Descubre el arte de la barbería moderna y lleva tu imagen al siguiente nivel.
             <label className="label">Selecciona el día</label>
             <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 12, marginBottom: 24 }}>
               {days.map(d => (
-                <div key={d.iso} className={`day-chip ${selected.date === d.iso ? "selected" : ""} ${d.disabled ? "disabled" : ""}`}
-                  onClick={() => !d.disabled && setSelected(p => ({ ...p, date: d.iso, time: null }))}>
+                <div
+                  key={d.iso}
+                  className={`day-chip ${selected.date === d.iso ? "selected" : ""} ${d.disabled ? "disabled" : ""}`}
+                  onClick={() => !d.disabled && setSelected(p => ({ ...p, date: d.iso, time: null }))}
+                >
                   <div style={{ fontSize: 9, letterSpacing: 1, fontFamily: "DM Sans", opacity: 0.7, marginBottom: 4 }}>{d.day}</div>
                   <div style={{ fontSize: 17, fontWeight: 700 }}>{d.num}</div>
-                  <div style={{ fontSize: 8, fontFamily: "DM Sans", opacity: 0.6, marginTop: 2 }}>{d.month.slice(0,3)}</div>
+                  <div style={{ fontSize: 8, fontFamily: "DM Sans", opacity: 0.6, marginTop: 2 }}>{d.month.slice(0, 3)}</div>
                 </div>
               ))}
             </div>
@@ -430,24 +468,22 @@ Descubre el arte de la barbería moderna y lleva tu imagen al siguiente nivel.
                 <label className="label">Horarios disponibles</label>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 24 }}>
                   {HOURS.map(h => {
-  const taken = bookedSlots.includes(h);
-  const now = new Date();
-  const todayIso = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-  const nowHours = now.getHours();
-  const nowMinutes = now.getMinutes();
-  const [slotHours, slotMinutes] = h.split(':').map(Number);
-  const isPastHour = selected.date === todayIso && 
-  (slotHours < nowHours || (slotHours === nowHours && slotMinutes <= nowMinutes));
-  const disabled = taken || isPastHour;
-  return (
-    <div key={h}
-      className={`time-chip ${disabled ? "disabled" : ""} ${selected.time === h ? "selected" : ""}`}
-      style={{ opacity: disabled ? 0.35 : 1, cursor: disabled ? "not-allowed" : "pointer" }}
-      onClick={() => !disabled && setSelected(p => ({ ...p, time: h }))}>
-      {h}
-    </div>
-  );
-})}
+                    const taken = bookedSlots.includes(h);
+                    const [slotHours, slotMinutes] = h.split(":").map(Number);
+                    const isPastHour =
+                      selected.date === todayIso &&
+                      (slotHours < now.getHours() || (slotHours === now.getHours() && slotMinutes <= now.getMinutes()));
+                    const disabled = taken || isPastHour;
+                    return (
+                      <div
+                        key={h}
+                        className={`time-chip ${disabled ? "disabled" : ""} ${selected.time === h ? "selected" : ""}`}
+                        onClick={() => !disabled && setSelected(p => ({ ...p, time: h }))}
+                      >
+                        {h}
+                      </div>
+                    );
+                  })}
                 </div>
               </>
             )}
@@ -461,7 +497,7 @@ Descubre el arte de la barbería moderna y lleva tu imagen al siguiente nivel.
 
         {/* ── STEP 4: FORM ── */}
         {step === 4 && (
-          <div className="fade">
+          <div className="fade" style={{ maxWidth: 560, margin: "0 auto" }}>
             <div style={{ textAlign: "center", marginBottom: 28 }}>
               <div className="ornament">✦ ✦ ✦</div>
               <h1 style={{ fontSize: 30, fontWeight: 700, marginTop: 12, marginBottom: 8, letterSpacing: 1 }}>Tus datos</h1>
@@ -496,13 +532,28 @@ Descubre el arte de la barbería moderna y lleva tu imagen al siguiente nivel.
                 <label className="label">{f.label}</label>
                 <div style={{ position: "relative" }}>
                   <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#c0b0a0" }}><Ico n={f.icon} s={16} /></span>
-                  <input type={f.type} className="input" style={{ paddingLeft: 40 }} value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.label.replace(" *", "").replace(" (opcional)", "")} />
+                  <input
+                    type={f.type}
+                    className="input"
+                    style={{ paddingLeft: 40 }}
+                    value={form[f.key]}
+                    onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
+                    placeholder={f.label.replace(" *", "").replace(" (opcional)", "")}
+                  />
                 </div>
               </div>
             ))}
+
             <div style={{ marginBottom: 24 }}>
               <label className="label">Notas adicionales (opcional)</label>
-              <textarea className="input" rows={3} style={{ resize: "none" }} value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="¿Alguna preferencia o indicación especial?" />
+              <textarea
+                className="input"
+                rows={3}
+                style={{ resize: "none" }}
+                value={form.notes}
+                onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
+                placeholder="¿Alguna preferencia o indicación especial?"
+              />
             </div>
 
             <div style={{ background: "#f5ede0", borderRadius: 8, padding: "12px 16px", marginBottom: 20, fontFamily: "DM Sans", fontSize: 12, color: "#8a7060", display: "flex", gap: 10, alignItems: "flex-start" }}>
@@ -510,16 +561,24 @@ Descubre el arte de la barbería moderna y lleva tu imagen al siguiente nivel.
               <span>Recibirás un recordatorio por <strong>WhatsApp</strong>{form.email ? " y correo electrónico" : ""} 24 horas antes de tu cita.</span>
             </div>
 
+            {error && (
+              <div style={{ background: "#fff1f1", border: "1px solid #f5b5b5", color: "#b91c1c", borderRadius: 8, padding: "12px 16px", marginBottom: 16, fontFamily: "DM Sans", fontSize: 13 }}>
+                {error}
+              </div>
+            )}
+
             <div style={{ display: "flex", gap: 10 }}>
-              <button className="btn-back" onClick={back}><Ico n="back" s={14} /> Atrás</button>
-              <button className="btn-primary" disabled={!form.name || !form.phone} onClick={confirm}>CONFIRMAR CITA</button>
+              <button className="btn-back" onClick={back} disabled={loading}><Ico n="back" s={14} /> Atrás</button>
+              <button className="btn-primary" disabled={!form.name || !form.phone || loading} onClick={confirm}>
+                {loading ? "ENVIANDO..." : "CONFIRMAR CITA"}
+              </button>
             </div>
           </div>
         )}
 
         {/* ── STEP 5: CONFIRMATION ── */}
         {step === 5 && booked && (
-          <div className="fade" style={{ textAlign: "center" }}>
+          <div className="fade" style={{ textAlign: "center", maxWidth: 560, margin: "0 auto" }}>
             <div style={{ marginBottom: 28, paddingTop: 20 }}>
               <div className="check-circle"><Ico n="check" s={36} /></div>
               <div className="ornament">✦ ✦ ✦</div>
@@ -530,10 +589,10 @@ Descubre el arte de la barbería moderna y lleva tu imagen al siguiente nivel.
             </div>
 
             {/* Confirmation card */}
-            <div style={{ background: "white", border: "1.5px solid #e8ddd0", borderRadius: 12, padding: "24px", marginBottom: 20, textAlign: "left", boxShadow: "0 8px 32px rgba(200,160,96,0.1)" }}>
+            <div style={{ background: "white", border: "1.5px solid #e8ddd0", borderRadius: 12, padding: 24, marginBottom: 20, textAlign: "left", boxShadow: "0 8px 32px rgba(200,160,96,0.1)" }}>
               <div style={{ textAlign: "center", marginBottom: 18 }}>
-                <div style={{ fontSize: 11, letterSpacing: 3, color: "#c8a060", fontFamily: "DM Sans" }}>BARBERÍA PRO</div>
-                <div style={{ fontSize: 11, color: "#a09080", fontFamily: "DM Sans", marginTop: 4 }}>Confirmación #{Date.now().toString().slice(-6)}</div>
+                <div style={{ fontSize: 11, letterSpacing: 3, color: "#c8a060", fontFamily: "DM Sans" }}>PEREIRA BARBER</div>
+                <div style={{ fontSize: 11, color: "#a09080", fontFamily: "DM Sans", marginTop: 4 }}>Confirmación #{confirmId}</div>
               </div>
               {[
                 { label: "Cliente", val: form.name },
@@ -553,12 +612,12 @@ Descubre el arte de la barbería moderna y lleva tu imagen al siguiente nivel.
 
             {/* Notifications */}
             <div style={{ display: "flex", gap: 10, marginBottom: 28 }}>
-              <div style={{ flex: 1, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: "12px", textAlign: "center" }}>
+              <div style={{ flex: 1, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: 12, textAlign: "center" }}>
                 <div style={{ color: "#22c55e", marginBottom: 4 }}><Ico n="wa" s={20} /></div>
                 <div style={{ fontSize: 11, fontFamily: "DM Sans", color: "#16a34a" }}>WhatsApp<br />{form.phone}</div>
               </div>
               {form.email && (
-                <div style={{ flex: 1, background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 8, padding: "12px", textAlign: "center" }}>
+                <div style={{ flex: 1, background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 8, padding: 12, textAlign: "center" }}>
                   <div style={{ color: "#3b82f6", marginBottom: 4 }}><Ico n="mail" s={20} /></div>
                   <div style={{ fontSize: 11, fontFamily: "DM Sans", color: "#2563eb" }}>Email<br />{form.email}</div>
                 </div>
@@ -576,7 +635,7 @@ Descubre el arte de la barbería moderna y lleva tu imagen al siguiente nivel.
 
       {/* FOOTER */}
       <div style={{ background: "#000000", padding: "16px 24px", textAlign: "center" }}>
-        <div style={{ fontSize: 9, letterSpacing: 3, color: "#ffffff", fontFamily: "DM Sans" }}>© 2026 BARBERÍA PRO · TODOS LOS DERECHOS RESERVADOS</div>
+        <div style={{ fontSize: 9, letterSpacing: 3, color: "#ffffff", fontFamily: "DM Sans" }}>© 2026 PEREIRA BARBER · TODOS LOS DERECHOS RESERVADOS</div>
       </div>
     </div>
   );
