@@ -35,6 +35,23 @@ export const addCliente = async (cliente) => {
   if (error) console.error(error);
   return data?.[0];
 };
+// NUEVA FUNCIÓN: actualizar puntos, visitas y última visita
+export const updateCliente = async (id, cambios) => {
+
+  const { data, error } = await supabase
+    .from('clientes')
+    .update(cambios)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error actualizando cliente:', error);
+    return null;
+  }
+
+  return data;
+};
 
 // ── INVENTARIO ─────────────────────────────────────
 export const getInventario = async () => {
