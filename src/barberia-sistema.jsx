@@ -958,7 +958,8 @@ if (nueva) {
   }
   // Actualizar puntos y visitas del cliente en Supabase
 const clienteDB = data.clients.find(c => c.name === clientName.trim());
-if (clienteDB) {
+const tieneServicioEnCarrito = cart.some(c => c.type === "service");
+if (clienteDB && tieneServicioEnCarrito) {
   let nuevosPuntos, nuevasVisitas;
   if (clienteDB.points >= 500) {
     nuevosPuntos = 0;
@@ -982,8 +983,7 @@ if (clienteDB) {
     });
 const updatedClients = d.clients.map(c => {
 
-  if (c.name === clientName.trim()) {
-
+if (c.name === clientName.trim() && tieneServicioEnCarrito) {
     // Si ya tenía 500 puntos, está utilizando
     // el descuento del 50% en este servicio
     if (c.points >= 500) {
