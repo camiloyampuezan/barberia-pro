@@ -465,7 +465,7 @@ return (
 function Agenda({ data, setData, showToast }) {
 const [showForm, setShowForm] = useState(false);
 const [selectedDate, setSelectedDate] = useState(() => getLocalISODate());
-const [form, setForm] = useState({ clientName: "", barberId: "1", service: "", date: getLocalISODate(), time: "10:00", price: "" });
+const [form, setForm] = useState({ clientName: "", clientPhone: "", clientEmail: "", barberId: "1", service: "", date: getLocalISODate(), time: "10:00", price: "" });
 const [barberFilter, setBarberFilter] = useState("todos");
 const [statusFilter, setStatusFilter] = useState("todos");
 
@@ -489,6 +489,8 @@ a.time === form.time
 if (duplicate) return showToast("Ese barbero ya tiene una cita en ese horario", "error");
 const nueva = await addCita({
 client_name: clientName,
+client_phone: form.clientPhone || null,
+client_email: form.clientEmail || null,
 barber_id: barberId,
 barber_name: barber?.name,
 service: form.service,
@@ -502,7 +504,7 @@ if (nueva) {
 setData(d => ({ ...d, appointments: [...d.appointments, normalizeAppointment(nueva)] }));
 setShowForm(false);
 showToast("Cita agendada correctamente");
-setForm({ clientName: "", barberId: "1", service: "", date: selectedDate, time: "10:00", price: "" });
+setForm({ clientName: "", clientPhone: "", clientEmail: "", barberId: "1", service: "", date: selectedDate, time: "10:00", price: "" });
 } else {
 showToast("Error al agendar cita", "error");
 }
@@ -633,9 +635,11 @@ return (
           <button style={{ background: "none", border: "none", color: "#888", cursor: "pointer" }} onClick={() => setShowForm(false)}><Icon name="x" /></button>
         </div>
         {[
-          { label: "CLIENTE", key: "clientName", type: "text", placeholder: "Nombre del cliente" },
-          { label: "FECHA", key: "date", type: "date" },
-          { label: "HORA", key: "time", type: "time" },
+        { label: "CLIENTE", key: "clientName", type: "text", placeholder: "Nombre del cliente" },
+        { label: "TELÉFONO CLIENTE", key: "clientPhone", type: "tel", placeholder: "+57 300 000 0000" },
+        { label: "EMAIL CLIENTE", key: "clientEmail", type: "email", placeholder: "correo@email.com (opcional)" },
+        { label: "FECHA", key: "date", type: "date" },
+        { label: "HORA", key: "time", type: "time" },
         ].map(f => (
           <div key={f.key} style={{ marginBottom: 14 }}>
             <label className="label">{f.label}</label>
