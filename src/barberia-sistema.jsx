@@ -1370,6 +1370,65 @@ return (
     <div key={name} style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: "1px solid #1a1a1a", fontFamily: "Lato", fontSize: 12 }}><span>{name}</span><span style={{ color: "#c8a96e" }}>{count} ventas</span></div>
   ))}
 </div>
+{/* Por barbero */}
+<div className="card" style={{ marginBottom: 16 }}>
+  <div style={{ fontSize: 13, letterSpacing: 2, color: "#888", marginBottom: 14 }}>RENDIMIENTO POR BARBERO</div>
+  {data.staff.map(b => {
+    const ventas = filteredSales.filter(s => s.barber_id === b.id || s.barberId === b.id);
+    const total = ventas.reduce((sum, s) => sum + (s.total || 0), 0);
+    const comision = Math.floor(total * b.commission / 100);
+    const citas = data.appointments.filter(a => (a.barberId || a.barber_id) === b.id && a.status === "confirmed").length;
+    return (
+      <div key={b.id} style={{ padding: "12px 0", borderBottom: "1px solid #1a1a1a" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+          <div>
+            <div style={{ fontSize: 14, letterSpacing: 1 }}>{b.name}</div>
+            <div style={{ fontSize: 10, color: "#555", fontFamily: "Lato" }}>{b.role} · {b.commission}% comisión</div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 16, color: "#c8a96e" }}>{formatCurrency(total)}</div>
+            <div style={{ fontSize: 10, color: "#22c55e", fontFamily: "Lato" }}>Comisión: {formatCurrency(comision)}</div>
+          </div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
+          {[{ label: "VENTAS", val: ventas.length }, { label: "CITAS", val: citas }, { label: "COMISIÓN", val: formatCurrency(comision) }].map(f => (
+            <div key={f.label} style={{ background: "#0a0a0a", borderRadius: 6, padding: "8px 10px" }}>
+              <div style={{ fontSize: 8, letterSpacing: 2, color: "#444", fontFamily: "Lato" }}>{f.label}</div>
+              <div style={{ fontSize: 13, color: "#d0c0a0", fontFamily: "Lato", marginTop: 2 }}>{f.val}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  })}
+</div>
+
+{/* Top clientes */}
+<div className="card" style={{ marginBottom: 16 }}>
+  <div style={{ fontSize: 13, letterSpacing: 2, color: "#888", marginBottom: 14 }}>TOP CLIENTES</div>
+  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+    <div className="card" style={{ textAlign: "center", padding: 12 }}>
+      <div className="stat-num" style={{ fontSize: 24, color: "#22c55e" }}>{data.clients.filter(c => c.visits <= 1).length}</div>
+      <div className="stat-label">NUEVOS</div>
+    </div>
+    <div className="card" style={{ textAlign: "center", padding: 12 }}>
+      <div className="stat-num" style={{ fontSize: 24 }}>{data.clients.filter(c => c.visits > 1).length}</div>
+      <div className="stat-label">RECURRENTES</div>
+    </div>
+  </div>
+  {[...data.clients].sort((a, b) => b.visits - a.visits).slice(0, 5).map((c, i) => (
+    <div key={c.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid #1a1a1a", fontFamily: "Lato", fontSize: 13 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 24, height: 24, borderRadius: "50%", background: i === 0 ? "rgba(200,169,110,0.2)" : "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: i === 0 ? "#c8a96e" : "#555" }}>{i + 1}</div>
+        <span style={{ color: "#d0c0a0" }}>{c.name}</span>
+      </div>
+      <div style={{ display: "flex", gap: 12 }}>
+        <span style={{ color: "#555" }}>{c.visits} visitas</span>
+        <span style={{ color: "#c8a96e" }}>{c.points} pts</span>
+      </div>
+    </div>
+  ))}
+</div>
 <div className="card">
   <div style={{ fontSize: 13, letterSpacing: 2, color: "#888", marginBottom: 14 }}>DETALLE DE VENTAS</div>
   {filteredSales.length === 0 ? <div style={{ color: "#555", fontFamily: "Lato" }}>No hay ventas en el período seleccionado.</div> : filteredSales.slice().reverse().map(s => (
@@ -1379,6 +1438,7 @@ return (
 </div>
 );
 }
+
 
 // ============================================================
 // PERSONAL
