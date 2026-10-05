@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getCitas, addCita, updateCita, deleteCita, getClientes, addCliente, updateCliente, getInventario, updateInventario, addInventario, getVentas, addVenta, getPersonal, addPersonal } from './db';
+import { getCitas, addCita, updateCita, deleteCita, getClientes, addCliente, updateCliente, getInventario, updateInventario, addInventario, getVentas, addVenta, getPersonal, addPersonal, updateConfig } from './db';
 import { enviarConfirmacionCita, enviarCancelacionCita } from './notificaciones';
 
 // ============================================================
@@ -230,6 +230,7 @@ const tabs = [
 { id: "pos", label: "Caja POS", icon: "pos" },
 { id: "inventario", label: "Inventario", icon: "package" },
 { id: "personal", label: "Personal", icon: "staff" },
+{ id: "configuracion", label: "Config", icon: "edit" },
 { id: "reportes", label: "Reportes", icon: "chart" },
 ];
 
@@ -331,6 +332,7 @@ return (
     {activeTab === "pos" && <POS data={data} setData={setData} showToast={showToast} />}
     {activeTab === "inventario" && <Inventario data={data} setData={setData} showToast={showToast} />}
     {activeTab === "personal" && <Personal data={data} setData={setData} showToast={showToast} />}
+    {activeTab === "configuracion" && <Configuracion showToast={showToast} onLogout={onLogout} />}
     {activeTab === "reportes" && <Reportes data={data} showToast={showToast} />}
   </div>
 
@@ -1575,4 +1577,73 @@ return (
 
 
 );
+}
+// ============================================================
+// CONFIGURACIÓN
+// ============================================================
+function Configuracion({ showToast, onLogout }) {
+  const [form, setForm] = useState({ user: "", newPass: "", confirmPass: "" });
+  const [loading, setLoading] = useState(false);
+
+  const handleSave = async () => {
+    if (!form.user || !form.newPass) return showToast("Completa todos los campos", "error");
+    if (form.newPass !== form.confirmPass) return showToast("Las contraseñas no coinciden", "error");
+    if (form.newPass.length < 6) return showToast("La contraseña debe tener mínimo 6 caracteres", "error");
+    setLoading(true);
+    await updateConfig("admin_user", form.user);
+    await updateConfig("admin_pass", form.newPass);
+    setLoading(false);
+    showToast("Credenciales actualizadas ✓");
+    setForm({ user: "", newPass: "", confirmPass: "" });
+    setTimeout(() => {
+      localStorage.removeItem("barberia_auth");
+      onLogout();
+    }, 2000);
+  };
+
+  return (
+    <div>
+      <div className="section-title">CONFIGURACIÓN</div>
+      <div className="gold-line" />
+
+      <div className="card" style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 12, letterSpacing: 2, color: "#888", marginBottom: 16 }}>CAMBIAR CREDENCIALES DE ACCESO</div>
+        <div style={{ background: "rgba(200,169,110,0.08)", border: "1px solid rgba(200,169,110,0.2)", borderRadius: 8, padding: "12px 16px", marginBottom: 20, fontSize: 12, color: "#888", fontFamily: "Lato", lineHeight: 1.6 }}>
+          ⚠️ Al guardar los cambios se cerrará la sesión automáticamente. Recuerda las nuevas credenciales antes de continuar.
+        </div>
+
+        {[
+          { label: "NUEVO USUARIO", key: "user", type: "text", placeholder: "Nuevo nombre de usuario" },
+          { label: "NUEVA CONTRASEÑA", key: "newPass", type: "password", placeholder: "Mínimo 6 caracteres" },
+          { label: "CONFIRMAR CONTRASEÑA", key: "confirmPass", type: "password", placeholder: "Repite la contraseña" },
+        ].map(f => (
+          <div key={f.key} style={{ marginBottom: 14 }}>
+            <label className="label">{f.label}</label>
+            <input
+              type={f.type}
+              className="input"
+              value={form[f.key]}
+              placeholder={f.placeholder}
+              onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
+            />
+          </div>
+        ))}
+
+        <button
+          className="btn btn-gold"
+          style={{ width: "100%", marginTop: 8 }}
+          disabled={loading}
+          onClick={handleSave}>
+          {loading ? "GUARDANDO..." : "GUARDAR CAMBIOS"}
+        </button>
+      </div>
+
+      <div className="card">
+        <div style={{ fontSize: 12, letterSpacing: 2, color: "#888", marginBottom: 16 }}>SESIÓN</div>
+        <button className="btn btn-danger" style={{ width: "100%" }} onClick={() => { localStorage.removeItem("barberia_auth"); onLogout(); }}>
+          CERRAR SESIÓN
+        </button>
+      </div>
+    </div>
+  );
 }

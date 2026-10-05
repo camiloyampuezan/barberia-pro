@@ -106,3 +106,14 @@ export const getCitasByDate = async (date) => {
   if (error) console.error(error);
   return data || [];
 };
+// ── CONFIGURACIÓN ──────────────────────────────────────────
+export const getConfig = async (clave) => {
+  const { data, error } = await supabase.from('configuracion').select('valor').eq('clave', clave).single();
+  if (error) console.error(error);
+  return data?.valor || null;
+};
+
+export const updateConfig = async (clave, valor) => {
+  const { error } = await supabase.from('configuracion').update({ valor }).eq('clave', clave);
+  if (error) console.error(error);
+};

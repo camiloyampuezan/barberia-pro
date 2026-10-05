@@ -1,14 +1,24 @@
-import { useState } from "react";
-
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "barberia2026";
+import { useState, useEffect } from "react";
+import { getConfig } from "./db";
 
 export default function Login({ onLogin }) {
   const [form, setForm] = useState({ user: "", pass: "" });
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [credentials, setCredentials] = useState({ user: "admin", pass: "barberia2026" });
+
+  useEffect(() => {
+    const loadCredentials = async () => {
+      const user = await getConfig("admin_user");
+      const pass = await getConfig("admin_pass");
+      if (user && pass) setCredentials({ user, pass });
+      setLoading(false);
+    };
+    loadCredentials();
+  }, []);
 
   const handleLogin = () => {
-    if (form.user === ADMIN_USER && form.pass === ADMIN_PASS) {
+    if (form.user === credentials.user && form.pass === credentials.pass) {
       localStorage.setItem("barberia_auth", "true");
       onLogin();
     } else {
@@ -17,11 +27,17 @@ export default function Login({ onLogin }) {
     }
   };
 
+  if (loading) return (
+    <div style={{ background: "#0a0a0a", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#c8a96e", fontFamily: "Oswald, sans-serif", fontSize: 20, letterSpacing: 4 }}>
+      CARGANDO...
+    </div>
+  );
+
   return (
     <div style={{ fontFamily: "'Oswald', sans-serif", background: "#0a0a0a", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600&family=Lato:wght@300;400;700&display=swap');`}</style>
       <div style={{ width: "100%", maxWidth: 380, padding: "0 20px" }}>
-        
+
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 40 }}>
           <div style={{ width: 64, height: 64, background: "linear-gradient(135deg, #c8a96e, #e8c97e)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
@@ -32,7 +48,7 @@ export default function Login({ onLogin }) {
               <line x1="8.12" y1="8.12" x2="12" y2="12"/>
             </svg>
           </div>
-          <div style={{ fontSize: 28, letterSpacing: 6, color: "#f0e6d3" }}>BARBERÍA PRO</div>
+          <div style={{ fontSize: 28, letterSpacing: 6, color: "#f0e6d3" }}>PEREIRA BARBER</div>
           <div style={{ fontSize: 11, letterSpacing: 3, color: "#555", fontFamily: "Lato", marginTop: 4 }}>PANEL DE ADMINISTRACIÓN</div>
         </div>
 
@@ -46,7 +62,7 @@ export default function Login({ onLogin }) {
               onChange={e => setForm(p => ({ ...p, user: e.target.value }))}
               onKeyDown={e => e.key === "Enter" && handleLogin()}
               style={{ background: "#1a1a1a", border: `1px solid ${error ? "#ef4444" : "#2a2a2a"}`, borderRadius: 8, padding: "12px 16px", color: "#f0e6d3", fontFamily: "Lato", fontSize: 14, width: "100%", outline: "none" }}
-              placeholder="admin"
+              placeholder="Usuario"
             />
           </div>
           <div style={{ marginBottom: 24 }}>
@@ -65,9 +81,7 @@ export default function Login({ onLogin }) {
               Usuario o contraseña incorrectos
             </div>
           )}
-          <button
-            onClick={handleLogin}
-            style={{ background: "linear-gradient(135deg, #c8a96e, #e8c97e)", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "14px", width: "100%", fontFamily: "Oswald", fontSize: 14, letterSpacing: 2, cursor: "pointer", fontWeight: 600 }}>
+          <button onClick={handleLogin} style={{ background: "linear-gradient(135deg, #c8a96e, #e8c97e)", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "14px", width: "100%", fontFamily: "Oswald", fontSize: 14, letterSpacing: 2, cursor: "pointer", fontWeight: 600 }}>
             INGRESAR
           </button>
         </div>

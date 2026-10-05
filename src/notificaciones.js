@@ -1,4 +1,5 @@
 import emailjs from '@emailjs/browser';
+import { supabase } from './supabase';
 
 // ── EMAIL GENÉRICO ─────────────────────────────────────────
 const enviarEmailA = async ({ to_email, to_name, message, date, time, service, barber_name, price }) => {
@@ -16,26 +17,14 @@ const enviarEmailA = async ({ to_email, to_name, message, date, time, service, b
   }
 };
 
-// ── WHATSAPP ───────────────────────────────────────────────
+// ── WHATSAPP (API de Meta, vía Supabase Edge Function) ─────
 export const enviarWhatsApp = async ({ phone, client_name, date, time, service, barber, price }) => {
   try {
-    const mensaje = `Hola ${client_name} 👋\n\nTe confirmamos tu cita en *Pereira Barber*:\n\n📅 Fecha: ${date}\n⏰ Hora: ${time}\n✂️ Servicio: ${service}\n👤 Barbero: ${barber}\n💰 Total: $${price}\n\n¡Te esperamos!`;
-    const response = await fetch(
-      `https://api.twilio.com/2010-04-01/Accounts/${process.env.REACT_APP_TWILIO_ACCOUNT_SID}/Messages.json`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: 'Basic ' + btoa(`${process.env.REACT_APP_TWILIO_ACCOUNT_SID}:${process.env.REACT_APP_TWILIO_AUTH_TOKEN}`),
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          From: process.env.REACT_APP_TWILIO_WHATSAPP_NUMBER,
-          To: `whatsapp:+57${phone.replace(/\D/g, '')}`,
-          Body: mensaje,
-        }),
-      }
-    );
-    return response.ok;
+    const { data, error } = await supabase.functions.invoke('enviar-whatsapp', {
+      body: { phone, client_name, date, time, service, barber, price },
+    });
+    if (error) throw error;
+    return !data?.error;
   } catch (error) {
     console.error('Error enviando WhatsApp:', error);
     return false;
