@@ -53,6 +53,15 @@ function getNextDays() {
   return days;
 }
 
+// ─── DATOS DE LA EMPRESA (cambia estos valores) ──────────────
+const ADDRESS = "Calle 00 # 00-00, Barrio, Pereira, Risaralda";
+const SOCIALS = [
+  { key: "facebook",  label: "Facebook",  url: "https://www.facebook.com/TU_PAGINA" },
+  { key: "instagram", label: "Instagram", url: "https://www.instagram.com/TU_USUARIO" },
+  { key: "tiktok",    label: "TikTok",    url: "https://www.tiktok.com/@TU_USUARIO" },
+];
+const MAPS_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ADDRESS)}`;
+
 // ─── ICONS ───────────────────────────────────────────────────
 const Ico = ({ n, s = 18 }) => {
   const m = {
@@ -67,6 +76,10 @@ const Ico = ({ n, s = 18 }) => {
     calendar: <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
     star: <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
     wa: <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>,
+        facebook: <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>,
+    instagram: <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4.5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>,
+    tiktok: <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>,
+    pin: <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
   };
   return m[n] || null;
 };
@@ -211,6 +224,10 @@ export default function BookingPage() {
         .label { font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: 1.5px; color: #a09080; text-transform: uppercase; margin-bottom: 8px; display: block; }
         .check-circle { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #c8a060, #e8c080); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: white; box-shadow: 0 8px 24px rgba(200,160,96,0.4); }
         .ornament { color: #c8a060; font-size: 20px; letter-spacing: 8px; }
+        .social-link { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(200,160,96,0.6); color: #ffffff; display: flex; align-items: center; justify-content: center; transition: all .2s; text-decoration: none; }
+        .social-link:hover { background: #ce0909; border-color: #ce0909; transform: translateY(-2px); }
+        .address-link { display: inline-flex; align-items: center; gap: 8px; color: #cdbfa8; text-decoration: none; font-family: 'DM Sans', sans-serif; font-size: 13px; transition: color .2s; }
+        .address-link:hover { color: #ffffff; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         .fade { animation: fadeIn .35s ease; }
         .summary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0e8dc; font-family: 'DM Sans', sans-serif; font-size: 13px; }
@@ -504,29 +521,10 @@ export default function BookingPage() {
               <p style={{ color: "#8a7560", fontFamily: "DM Sans", fontSize: 14 }}>Para confirmar y enviarte el recordatorio</p>
             </div>
 
-            {/* Summary card */}
-            <div style={{ background: "#1a1209", borderRadius: 10, padding: "16px 20px", marginBottom: 24, color: "#f0e0c0" }}>
-              <div style={{ fontSize: 10, letterSpacing: 2, color: "#c8a060", fontFamily: "DM Sans", marginBottom: 12 }}>RESUMEN DE TU CITA</div>
-              {[
-                { label: "Servicio", val: selected.service?.name },
-                { label: "Barbero", val: selected.barber?.name },
-                { label: "Fecha", val: selected.date },
-                { label: "Hora", val: selected.time },
-                { label: "Duración", val: `${selected.service?.duration} min` },
-                { label: "Total", val: `$${selected.service?.price.toLocaleString()}` },
-              ].map(r => (
-                <div key={r.label} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid #2d2010", fontFamily: "DM Sans", fontSize: 13 }}>
-                  <span style={{ color: "#8a7060" }}>{r.label}</span>
-                  <span style={{ color: r.label === "Total" ? "#c8a060" : "#f0e0c0", fontWeight: r.label === "Total" ? 700 : 400 }}>{r.val}</span>
-                </div>
-              ))}
-            </div>
-
             {/* Form */}
             {[
               { label: "Nombre completo *", key: "name", type: "text", icon: "user" },
               { label: "WhatsApp *", key: "phone", type: "tel", icon: "phone" },
-              { label: "Correo electrónico (opcional)", key: "email", type: "email", icon: "mail" },
             ].map(f => (
               <div key={f.key} style={{ marginBottom: 14 }}>
                 <label className="label">{f.label}</label>
@@ -558,7 +556,7 @@ export default function BookingPage() {
 
             <div style={{ background: "#f5ede0", borderRadius: 8, padding: "12px 16px", marginBottom: 20, fontFamily: "DM Sans", fontSize: 12, color: "#8a7060", display: "flex", gap: 10, alignItems: "flex-start" }}>
               <span style={{ color: "#c8a060", marginTop: 1 }}><Ico n="wa" s={16} /></span>
-              <span>Recibirás un recordatorio por <strong>WhatsApp</strong>{form.email ? " y correo electrónico" : ""} 24 horas antes de tu cita.</span>
+              <span>Te enviaremos la confirmación por <strong>WhatsApp</strong> cuando el barbero confirme tu cita.</span>
             </div>
 
             {error && (
@@ -616,12 +614,6 @@ export default function BookingPage() {
                 <div style={{ color: "#22c55e", marginBottom: 4 }}><Ico n="wa" s={20} /></div>
                 <div style={{ fontSize: 11, fontFamily: "DM Sans", color: "#16a34a" }}>WhatsApp<br />{form.phone}</div>
               </div>
-              {form.email && (
-                <div style={{ flex: 1, background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 8, padding: 12, textAlign: "center" }}>
-                  <div style={{ color: "#3b82f6", marginBottom: 4 }}><Ico n="mail" s={20} /></div>
-                  <div style={{ fontSize: 11, fontFamily: "DM Sans", color: "#2563eb" }}>Email<br />{form.email}</div>
-                </div>
-              )}
             </div>
 
             <div style={{ background: "#fffbf5", border: "1px solid #e8d0a0", borderRadius: 8, padding: "14px 16px", marginBottom: 24, fontFamily: "DM Sans", fontSize: 12, color: "#8a7060", lineHeight: 1.6 }}>
@@ -634,8 +626,24 @@ export default function BookingPage() {
       </div>
 
       {/* FOOTER */}
-      <div style={{ background: "#000000", padding: "16px 24px", textAlign: "center" }}>
-        <div style={{ fontSize: 9, letterSpacing: 3, color: "#ffffff", fontFamily: "DM Sans" }}>© 2026 PEREIRA BARBER · TODOS LOS DERECHOS RESERVADOS</div>
+           {/* FOOTER */}
+      <div style={{ background: "#000000", borderTop: "1px solid #2a2a2a", padding: "28px 24px 18px", textAlign: "center" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 18 }}>
+          {SOCIALS.map(s => (
+            <a key={s.key} className="social-link" href={s.url} target="_blank" rel="noopener noreferrer" aria-label={s.label} title={s.label}>
+              <Ico n={s.key} s={18} />
+            </a>
+          ))}
+        </div>
+
+        <a className="address-link" href={MAPS_URL} target="_blank" rel="noopener noreferrer">
+          <span style={{ color: "#c8a060", display: "flex" }}><Ico n="pin" s={16} /></span>
+          {ADDRESS}
+        </a>
+
+        <div style={{ fontSize: 9, letterSpacing: 3, color: "#ffffff", fontFamily: "DM Sans", marginTop: 20 }}>
+          © 2026 PEREIRA BARBER · DESARROLLADO POR YAMPZ SOFTWARE
+        </div>
       </div>
     </div>
   );

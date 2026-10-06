@@ -18,10 +18,11 @@ const enviarEmailA = async ({ to_email, to_name, message, date, time, service, b
 };
 
 // ── WHATSAPP (API de Meta, vía Supabase Edge Function) ─────
-export const enviarWhatsApp = async ({ phone, client_name, date, time, service, barber, price }) => {
+export const enviarWhatsApp = async ({ cita_id }) => {
+  if (!cita_id) return false;
   try {
     const { data, error } = await supabase.functions.invoke('enviar-whatsapp', {
-      body: { phone, client_name, date, time, service, barber, price },
+      body: { cita_id },
     });
     if (error) throw error;
     return !data?.error;
@@ -64,22 +65,26 @@ export const enviarNotificaciones = async ({ client_name, phone, email, date, ti
     date, time, service, barber_name: barber, price
   }));
 
-  // 4. WhatsApp al cliente
-  if (phone) {
-    promises.push(enviarWhatsApp({ phone, client_name, date, time, service, barber, price }));
-  }
+  // El WhatsApp al cliente se envía cuando el barbero confirma la cita (ver enviarConfirmacionCita)
 
   await Promise.all(promises);
  
 };
  // ── CONFIRMACIÓN DE CITA ───────────────────────────────────
-export const enviarConfirmacionCita = async ({ client_name, email, phone, date, time, service, barber, price }) => {
-  await enviarEmailA({
-    to_email: email,
-    to_name: client_name,
-    message: `¡Tu cita ha sido confirmada! Te esperamos en Pereira Barber.`,
-    date, time, service, barber_name: barber, price
-  });
+export const enviarConfirmacionCita = async ({ cita_id, client_name, email, phone, date, time, service, barber, price }) => {
+  const promises = [];
+  if (email) {
+    promises.push(enviarEmailA({
+      to_email: email,
+      to_name: client_name,
+      message: `¡Tu cita ha sido confirmada! Te esperamos en Pereira Barber.`,
+      date, time, service, barber_name: barber, price
+    }));
+  }
+  if (phone && cita_id) {
+    promises.push(enviarWhatsApp({ cita_id }));
+  }
+  await Promise.all(promises);
 };
 
 // ── CANCELACIÓN DE CITA ────────────────────────────────────

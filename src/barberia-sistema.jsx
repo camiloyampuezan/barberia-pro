@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getCitas, addCita, updateCita, deleteCita, getClientes, addCliente, updateCliente, getInventario, updateInventario, addInventario, getVentas, addVenta, getPersonal, addPersonal, updateConfig } from './db';
+import { getCitas, addCita, updateCita, deleteCita, getClientes, addCliente, updateCliente, getInventario, updateInventario, addInventario, getVentas, addVenta, getPersonal, addPersonal } from './db';
 import { enviarConfirmacionCita, enviarCancelacionCita } from './notificaciones';
 
 // ============================================================
@@ -165,6 +165,15 @@ commission: toNumber(p.commission, 35),
 sales: toNumber(p.sales),
 });
 
+function Footer() {
+  return (
+    <div style={{ background: "#000000", borderTop: "1px solid #2a2a2a", padding: "16px 24px 84px", textAlign: "center" }}>
+      <div style={{ fontSize: 9, letterSpacing: 3, color: "#ffffff", fontFamily: "Lato, sans-serif" }}>
+        © 2026 PEREIRA BARBER · TODOS LOS DERECHOS RESERVADOS
+      </div>
+    </div>
+  );
+}
 // ============================================================
 // MAIN APP
 // ============================================================
@@ -230,12 +239,11 @@ const tabs = [
 { id: "pos", label: "Caja POS", icon: "pos" },
 { id: "inventario", label: "Inventario", icon: "package" },
 { id: "personal", label: "Personal", icon: "staff" },
-{ id: "configuracion", label: "Config", icon: "edit" },
 { id: "reportes", label: "Reportes", icon: "chart" },
 ];
 
 return (
-<div style={{ fontFamily: "'Bebas Neue', 'Oswald', sans-serif", background: "#0a0a0a", minHeight: "100vh", color: "#f0e6d3" }}>
+<div style={{ fontFamily: "'Bebas Neue', 'Oswald', sans-serif", background: "#0a0a0a", minHeight: "100vh", color: "#f0e6d3", display: "flex", flexDirection: "column" }}>
 <style>{`         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500;600&family=Lato:wght@300;400;700&display=swap');         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #0a0a0a; }         ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #1a1a1a; } ::-webkit-scrollbar-thumb { background: #c8a96e; border-radius: 2px; }
         .nav-btn { background: none; border: none; cursor: pointer; padding: 12px 16px; border-radius: 8px; color: #888; transition: all .2s; display: flex; flex-direction: column; align-items: center; gap: 4px; font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 1px; }
@@ -325,16 +333,16 @@ return (
 
 
   {/* CONTENT */}
-  <div style={{ padding: "24px 20px", paddingBottom: 100, maxWidth: 900, margin: "0 auto" }}>
+  <div style={{ flex: 1, width: "100%", padding: "24px 20px", maxWidth: 900, margin: "0 auto" }}>
     {activeTab === "dashboard" && <Dashboard data={data} todayApps={todayApps} todayRevenue={todayRevenue} monthRevenue={monthRevenue} lowStock={lowStock} setActiveTab={setActiveTab} />}
     {activeTab === "agenda" && <Agenda data={data} setData={setData} showToast={showToast} />}
     {activeTab === "clientes" && <Clientes data={data} setData={setData} showToast={showToast} />}
     {activeTab === "pos" && <POS data={data} setData={setData} showToast={showToast} />}
     {activeTab === "inventario" && <Inventario data={data} setData={setData} showToast={showToast} />}
     {activeTab === "personal" && <Personal data={data} setData={setData} showToast={showToast} />}
-    {activeTab === "configuracion" && <Configuracion showToast={showToast} onLogout={onLogout} />}
     {activeTab === "reportes" && <Reportes data={data} showToast={showToast} />}
   </div>
+    <Footer />
 
   {/* BOTTOM NAV */}
   <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#0d0d0d", borderTop: "1px solid #1a1a1a", display: "flex", justifyContent: "space-around", padding: "4px 0", zIndex: 50 }}>
@@ -467,7 +475,7 @@ return (
 function Agenda({ data, setData, showToast }) {
 const [showForm, setShowForm] = useState(false);
 const [selectedDate, setSelectedDate] = useState(() => getLocalISODate());
-const [form, setForm] = useState({ clientName: "", clientPhone: "", clientEmail: "", barberId: "1", service: "", date: getLocalISODate(), time: "10:00", price: "" });
+const [form, setForm] = useState({ clientName: "", barberId: "1", service: "", date: getLocalISODate(), time: "10:00", price: "" });
 const [barberFilter, setBarberFilter] = useState("todos");
 const [statusFilter, setStatusFilter] = useState("todos");
 
@@ -491,8 +499,6 @@ a.time === form.time
 if (duplicate) return showToast("Ese barbero ya tiene una cita en ese horario", "error");
 const nueva = await addCita({
 client_name: clientName,
-client_phone: form.clientPhone || null,
-client_email: form.clientEmail || null,
 barber_id: barberId,
 barber_name: barber?.name,
 service: form.service,
@@ -506,7 +512,7 @@ if (nueva) {
 setData(d => ({ ...d, appointments: [...d.appointments, normalizeAppointment(nueva)] }));
 setShowForm(false);
 showToast("Cita agendada correctamente");
-setForm({ clientName: "", clientPhone: "", clientEmail: "", barberId: "1", service: "", date: selectedDate, time: "10:00", price: "" });
+setForm({ clientName: "", barberId: "1", service: "", date: selectedDate, time: "10:00", price: "" });
 } else {
 showToast("Error al agendar cita", "error");
 }
@@ -528,6 +534,7 @@ setData(d => ({ ...d, appointments: d.appointments.map(a => a.id === id ? { ...a
 
 if (status === "confirmed" && cita?.client_phone) {
 await enviarConfirmacionCita({
+cita_id: id,
 client_name: cita.clientName || cita.client_name,
 email: cita.client_email,
 phone: cita.client_phone,
@@ -637,11 +644,9 @@ return (
           <button style={{ background: "none", border: "none", color: "#888", cursor: "pointer" }} onClick={() => setShowForm(false)}><Icon name="x" /></button>
         </div>
         {[
-        { label: "CLIENTE", key: "clientName", type: "text", placeholder: "Nombre del cliente" },
-        { label: "TELÉFONO CLIENTE", key: "clientPhone", type: "tel", placeholder: "+57 300 000 0000" },
-        { label: "EMAIL CLIENTE", key: "clientEmail", type: "email", placeholder: "correo@email.com (opcional)" },
-        { label: "FECHA", key: "date", type: "date" },
-        { label: "HORA", key: "time", type: "time" },
+          { label: "CLIENTE", key: "clientName", type: "text", placeholder: "Nombre del cliente" },
+          { label: "FECHA", key: "date", type: "date" },
+          { label: "HORA", key: "time", type: "time" },
         ].map(f => (
           <div key={f.key} style={{ marginBottom: 14 }}>
             <label className="label">{f.label}</label>
@@ -1372,65 +1377,6 @@ return (
     <div key={name} style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: "1px solid #1a1a1a", fontFamily: "Lato", fontSize: 12 }}><span>{name}</span><span style={{ color: "#c8a96e" }}>{count} ventas</span></div>
   ))}
 </div>
-{/* Por barbero */}
-<div className="card" style={{ marginBottom: 16 }}>
-  <div style={{ fontSize: 13, letterSpacing: 2, color: "#888", marginBottom: 14 }}>RENDIMIENTO POR BARBERO</div>
-  {data.staff.map(b => {
-    const ventas = filteredSales.filter(s => s.barber_id === b.id || s.barberId === b.id);
-    const total = ventas.reduce((sum, s) => sum + (s.total || 0), 0);
-    const comision = Math.floor(total * b.commission / 100);
-    const citas = data.appointments.filter(a => (a.barberId || a.barber_id) === b.id && a.status === "confirmed").length;
-    return (
-      <div key={b.id} style={{ padding: "12px 0", borderBottom: "1px solid #1a1a1a" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-          <div>
-            <div style={{ fontSize: 14, letterSpacing: 1 }}>{b.name}</div>
-            <div style={{ fontSize: 10, color: "#555", fontFamily: "Lato" }}>{b.role} · {b.commission}% comisión</div>
-          </div>
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 16, color: "#c8a96e" }}>{formatCurrency(total)}</div>
-            <div style={{ fontSize: 10, color: "#22c55e", fontFamily: "Lato" }}>Comisión: {formatCurrency(comision)}</div>
-          </div>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
-          {[{ label: "VENTAS", val: ventas.length }, { label: "CITAS", val: citas }, { label: "COMISIÓN", val: formatCurrency(comision) }].map(f => (
-            <div key={f.label} style={{ background: "#0a0a0a", borderRadius: 6, padding: "8px 10px" }}>
-              <div style={{ fontSize: 8, letterSpacing: 2, color: "#444", fontFamily: "Lato" }}>{f.label}</div>
-              <div style={{ fontSize: 13, color: "#d0c0a0", fontFamily: "Lato", marginTop: 2 }}>{f.val}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  })}
-</div>
-
-{/* Top clientes */}
-<div className="card" style={{ marginBottom: 16 }}>
-  <div style={{ fontSize: 13, letterSpacing: 2, color: "#888", marginBottom: 14 }}>TOP CLIENTES</div>
-  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
-    <div className="card" style={{ textAlign: "center", padding: 12 }}>
-      <div className="stat-num" style={{ fontSize: 24, color: "#22c55e" }}>{data.clients.filter(c => c.visits <= 1).length}</div>
-      <div className="stat-label">NUEVOS</div>
-    </div>
-    <div className="card" style={{ textAlign: "center", padding: 12 }}>
-      <div className="stat-num" style={{ fontSize: 24 }}>{data.clients.filter(c => c.visits > 1).length}</div>
-      <div className="stat-label">RECURRENTES</div>
-    </div>
-  </div>
-  {[...data.clients].sort((a, b) => b.visits - a.visits).slice(0, 5).map((c, i) => (
-    <div key={c.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid #1a1a1a", fontFamily: "Lato", fontSize: 13 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{ width: 24, height: 24, borderRadius: "50%", background: i === 0 ? "rgba(200,169,110,0.2)" : "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: i === 0 ? "#c8a96e" : "#555" }}>{i + 1}</div>
-        <span style={{ color: "#d0c0a0" }}>{c.name}</span>
-      </div>
-      <div style={{ display: "flex", gap: 12 }}>
-        <span style={{ color: "#555" }}>{c.visits} visitas</span>
-        <span style={{ color: "#c8a96e" }}>{c.points} pts</span>
-      </div>
-    </div>
-  ))}
-</div>
 <div className="card">
   <div style={{ fontSize: 13, letterSpacing: 2, color: "#888", marginBottom: 14 }}>DETALLE DE VENTAS</div>
   {filteredSales.length === 0 ? <div style={{ color: "#555", fontFamily: "Lato" }}>No hay ventas en el período seleccionado.</div> : filteredSales.slice().reverse().map(s => (
@@ -1440,7 +1386,6 @@ return (
 </div>
 );
 }
-
 
 // ============================================================
 // PERSONAL
@@ -1577,73 +1522,4 @@ return (
 
 
 );
-}
-// ============================================================
-// CONFIGURACIÓN
-// ============================================================
-function Configuracion({ showToast, onLogout }) {
-  const [form, setForm] = useState({ user: "", newPass: "", confirmPass: "" });
-  const [loading, setLoading] = useState(false);
-
-  const handleSave = async () => {
-    if (!form.user || !form.newPass) return showToast("Completa todos los campos", "error");
-    if (form.newPass !== form.confirmPass) return showToast("Las contraseñas no coinciden", "error");
-    if (form.newPass.length < 6) return showToast("La contraseña debe tener mínimo 6 caracteres", "error");
-    setLoading(true);
-    await updateConfig("admin_user", form.user);
-    await updateConfig("admin_pass", form.newPass);
-    setLoading(false);
-    showToast("Credenciales actualizadas ✓");
-    setForm({ user: "", newPass: "", confirmPass: "" });
-    setTimeout(() => {
-      localStorage.removeItem("barberia_auth");
-      onLogout();
-    }, 2000);
-  };
-
-  return (
-    <div>
-      <div className="section-title">CONFIGURACIÓN</div>
-      <div className="gold-line" />
-
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 12, letterSpacing: 2, color: "#888", marginBottom: 16 }}>CAMBIAR CREDENCIALES DE ACCESO</div>
-        <div style={{ background: "rgba(200,169,110,0.08)", border: "1px solid rgba(200,169,110,0.2)", borderRadius: 8, padding: "12px 16px", marginBottom: 20, fontSize: 12, color: "#888", fontFamily: "Lato", lineHeight: 1.6 }}>
-          ⚠️ Al guardar los cambios se cerrará la sesión automáticamente. Recuerda las nuevas credenciales antes de continuar.
-        </div>
-
-        {[
-          { label: "NUEVO USUARIO", key: "user", type: "text", placeholder: "Nuevo nombre de usuario" },
-          { label: "NUEVA CONTRASEÑA", key: "newPass", type: "password", placeholder: "Mínimo 6 caracteres" },
-          { label: "CONFIRMAR CONTRASEÑA", key: "confirmPass", type: "password", placeholder: "Repite la contraseña" },
-        ].map(f => (
-          <div key={f.key} style={{ marginBottom: 14 }}>
-            <label className="label">{f.label}</label>
-            <input
-              type={f.type}
-              className="input"
-              value={form[f.key]}
-              placeholder={f.placeholder}
-              onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
-            />
-          </div>
-        ))}
-
-        <button
-          className="btn btn-gold"
-          style={{ width: "100%", marginTop: 8 }}
-          disabled={loading}
-          onClick={handleSave}>
-          {loading ? "GUARDANDO..." : "GUARDAR CAMBIOS"}
-        </button>
-      </div>
-
-      <div className="card">
-        <div style={{ fontSize: 12, letterSpacing: 2, color: "#888", marginBottom: 16 }}>SESIÓN</div>
-        <button className="btn btn-danger" style={{ width: "100%" }} onClick={() => { localStorage.removeItem("barberia_auth"); onLogout(); }}>
-          CERRAR SESIÓN
-        </button>
-      </div>
-    </div>
-  );
 }

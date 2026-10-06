@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import BarberiaApp from './barberia-sistema';
 import BookingPage from './barberia-booking';
 import Login from './Login';
+import BarberoPanel from './barbero-panel';
 
 function AdminRoute() {
   const [auth, setAuth] = useState(localStorage.getItem("barberia_auth") === "true");
@@ -24,6 +25,7 @@ function App() {
       <Routes>
         <Route path="/" element={<BookingPage />} />
         <Route path="/admin" element={<AdminRoute />} />
+        <Route path="/barbero" element={<BarberoPanel />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
