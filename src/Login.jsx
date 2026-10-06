@@ -5,7 +5,7 @@ function Footer() {
   return (
     <div style={{ background: "#000000", borderTop: "1px solid #2a2a2a", padding: "16px 24px", textAlign: "center" }}>
       <div style={{ fontSize: 9, letterSpacing: 3, color: "#ffffff", fontFamily: "Lato, sans-serif" }}>
-        © 2026 PEREIRA BARBER · TODOS LOS DERECHOS RESERVADOS
+        © 2026 PEREIRA BARBER · DESARROLLADO POR YAMPZ SOFTWARE
       </div>
     </div>
   );
