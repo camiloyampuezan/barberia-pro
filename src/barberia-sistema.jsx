@@ -6,34 +6,14 @@ import { enviarConfirmacionCita, enviarCancelacionCita } from './notificaciones'
 // DATA & STATE
 // ============================================================
 const INITIAL_STATE = {
-clients: [
-{ id: 1, name: "Carlos Martínez", phone: "311-234-5678", email: "carlos@mail.com", visits: 8, points: 240, lastVisit: "2026-05-15", birthday: "1990-03-12", notes: "Prefiere corte clásico" },
-{ id: 2, name: "Andrés López", phone: "315-876-5432", email: "andres@mail.com", visits: 3, points: 90, lastVisit: "2026-05-18", birthday: "1995-07-22", notes: "Barba larga" },
-{ id: 3, name: "Diego Ramírez", phone: "318-555-1234", email: "diego@mail.com", visits: 12, points: 360, lastVisit: "2026-05-10", birthday: "1988-11-05", notes: "Cliente VIP" },
-],
-appointments: [
-{ id: 1, clientId: 1, clientName: "Carlos Martínez", barberId: 1, service: "Corte + Barba", date: "2026-05-22", time: "10:00", duration: 45, price: 35000, status: "confirmed" },
-{ id: 2, clientId: 2, clientName: "Andrés López", barberId: 2, service: "Corte Clásico", date: "2026-05-22", time: "11:00", duration: 30, price: 20000, status: "pending" },
-{ id: 3, clientId: 3, clientName: "Diego Ramírez", barberId: 1, service: "Arreglo de Barba", date: "2026-05-22", time: "14:00", duration: 30, price: 18000, status: "confirmed" },
-{ id: 4, clientId: 1, clientName: "Carlos Martínez", barberId: 2, service: "Corte Clásico", date: "2026-05-23", time: "09:00", duration: 30, price: 20000, status: "pending" },
-],
-inventory: [
-{ id: 1, name: "Aceite para Barba", category: "Cuidado", stock: 8, minStock: 5, price: 25000, cost: 12000, unit: "und" },
-{ id: 2, name: "Cera Moldeadora", category: "Estilizado", stock: 3, minStock: 5, price: 18000, cost: 8000, unit: "und" },
-{ id: 3, name: "Navajas Gillette", category: "Herramientas", stock: 45, minStock: 20, price: 1500, cost: 700, unit: "und" },
-{ id: 4, name: "Shampoo Profesional", category: "Cuidado", stock: 2, minStock: 4, price: 32000, cost: 15000, unit: "und" },
-{ id: 5, name: "Gel Fijador", category: "Estilizado", stock: 12, minStock: 6, price: 15000, cost: 6000, unit: "und" },
-{ id: 6, name: "Toallas Desechables", category: "Consumibles", stock: 200, minStock: 50, price: 500, cost: 200, unit: "und" },
-],
+clients: [],
+appointments: [],
+inventory: [],
 staff: [
-{ id: 1, name: "Deivy Pereira", role: "Barbero Senior", schedule: "Lun-Sab", startTime: "09:00", endTime: "18:00", commission: 40, phone: "310-111-2222", sales: 850000 },
-{ id: 2, name: "Juan Pablo Herrera", role: "Barbero", schedule: "Mar-Dom", startTime: "10:00", endTime: "19:00", commission: 35, phone: "312-333-4444", sales: 620000 },
+{ id: 1, name: "Deivy Pereira", role: "Barbero Senior", schedule: "Lun-Sab", startTime: "09:00", endTime: "18:00", commission: 40, phone: "", sales: 0 },
+{ id: 2, name: "Juan Pablo Herrera", role: "Barbero", schedule: "Mar-Dom", startTime: "10:00", endTime: "19:00", commission: 35, phone: "", sales: 0 },
 ],
-sales: [
-{ id: 1, date: "2026-05-22", clientName: "Carlos Martínez", services: ["Corte + Barba"], products: [], total: 35000, payment: "efectivo", barberId: 1 },
-{ id: 2, date: "2026-05-21", clientName: "Diego Ramírez", services: ["Corte Clásico"], products: ["Aceite para Barba"], total: 55000, payment: "tarjeta", barberId: 1 },
-{ id: 3, date: "2026-05-20", clientName: "Andrés López", services: ["Arreglo de Barba"], products: [], total: 18000, payment: "efectivo", barberId: 2 },
-],
+sales: [],
 services: [
   { id: 1, cat: "Cabello", name: "Corte de Cabello", price: 25000, duration: 30, desc: "Corte cabello" },
   { id: 2, cat: "Cabello", name: "Corte + Barba", price: 30000, duration: 45, desc: "Corte completo más arreglo de barba" },
@@ -82,6 +62,8 @@ const m = String(date.getMonth() + 1).padStart(2, "0");
 const d = String(date.getDate()).padStart(2, "0");
 return `${y}-${m}-${d}`;
 };
+
+const toMin = (hhmm) => { const [h, m] = String(hhmm).slice(0, 5).split(":").map(Number); return h * 60 + m; };
 
 const formatCurrency = value => `$${toNumber(value).toLocaleString("es-CO")}`;
 
@@ -149,6 +131,7 @@ cost: toNumber(i.cost),
 const normalizeSale = (s) => ({
 ...s,
 id: s.id,
+barberId: s.barberId ?? s.barber_id,
 clientName: s.clientName ?? s.client_name ?? "Cliente",
 services: Array.isArray(s.services) ? s.services : [],
 products: Array.isArray(s.products) ? s.products : [],
@@ -198,10 +181,10 @@ getPersonal(),
 if (!mounted) return;
 setData(d => ({
 ...d,
-appointments: Array.isArray(citas) && citas.length ? citas.map(normalizeAppointment) : d.appointments,
-clients: Array.isArray(clientes) && clientes.length ? clientes.map(normalizeClient) : d.clients,
-inventory: Array.isArray(inventario) && inventario.length ? inventario.map(normalizeInventory) : d.inventory,
-sales: Array.isArray(ventas) && ventas.length ? ventas.map(normalizeSale) : d.sales,
+appointments: Array.isArray(citas) ? citas.map(normalizeAppointment) : d.appointments,
+clients: Array.isArray(clientes) ? clientes.map(normalizeClient) : d.clients,
+inventory: Array.isArray(inventario) ? inventario.map(normalizeInventory) : d.inventory,
+sales: Array.isArray(ventas) ? ventas.map(normalizeSale) : d.sales,
 staff: Array.isArray(personal) && personal.length ? personal.map(normalizeStaff) : d.staff,
 }));
 } catch (error) {
@@ -475,7 +458,7 @@ return (
 function Agenda({ data, setData, showToast }) {
 const [showForm, setShowForm] = useState(false);
 const [selectedDate, setSelectedDate] = useState(() => getLocalISODate());
-const [form, setForm] = useState({ clientName: "", barberId: "1", service: "", date: getLocalISODate(), time: "10:00", price: "" });
+const [form, setForm] = useState({ clientName: "", phone: "", barberId: "1", service: "", date: getLocalISODate(), time: "10:00", price: "" });
 const [barberFilter, setBarberFilter] = useState("todos");
 const [statusFilter, setStatusFilter] = useState("todos");
 
@@ -490,15 +473,21 @@ if (selectedDateValue < new Date()) return showToast("No puedes agendar una cita
 const barberId = parseInt(form.barberId, 10);
 const svc = data.services.find(s => s.name === form.service);
 const barber = data.staff.find(s => s.id === barberId);
-const duplicate = data.appointments.some(a =>
-(a.status || "pending") !== "cancelled" &&
-Number(a.barberId ?? a.barber_id) === barberId &&
-a.date === form.date &&
-a.time === form.time
-);
-if (duplicate) return showToast("Ese barbero ya tiene una cita en ese horario", "error");
+const phoneDigits = form.phone.replace(/\D/g, "");
+if (form.phone.trim() && phoneDigits.length < 10) return showToast("El teléfono debe tener 10 dígitos", "error");
+const newStart = toMin(form.time);
+const newEnd = newStart + (svc?.duration || 30);
+const duplicate = data.appointments.some(a => {
+if ((a.status || "pending") === "cancelled") return false;
+if (Number(a.barberId ?? a.barber_id) !== barberId || a.date !== form.date) return false;
+const start = toMin(a.time);
+const end = start + toNumber(a.duration, 30);
+return newStart < end && start < newEnd;
+});
+if (duplicate) return showToast("Ese horario se cruza con otra cita de ese barbero", "error");
 const nueva = await addCita({
 client_name: clientName,
+client_phone: phoneDigits || null,
 barber_id: barberId,
 barber_name: barber?.name,
 service: form.service,
@@ -512,7 +501,7 @@ if (nueva) {
 setData(d => ({ ...d, appointments: [...d.appointments, normalizeAppointment(nueva)] }));
 setShowForm(false);
 showToast("Cita agendada correctamente");
-setForm({ clientName: "", barberId: "1", service: "", date: selectedDate, time: "10:00", price: "" });
+setForm({ clientName: "", phone: "", barberId: "1", service: "", date: selectedDate, time: "10:00", price: "" });
 } else {
 showToast("Error al agendar cita", "error");
 }
@@ -645,6 +634,7 @@ return (
         </div>
         {[
           { label: "CLIENTE", key: "clientName", type: "text", placeholder: "Nombre del cliente" },
+          { label: "WHATSAPP (opcional, para enviar la confirmación)", key: "phone", type: "tel", placeholder: "Ej: 3001234567" },
           { label: "FECHA", key: "date", type: "date" },
           { label: "HORA", key: "time", type: "time" },
         ].map(f => (
@@ -1416,7 +1406,11 @@ showToast("Error al registrar empleado", "error");
 }
 };
 
-const totalSales = data.staff.reduce((sum, s) => sum + toNumber(s.sales), 0);
+const mesActual = getLocalISODate().slice(0, 7);
+const ventasDe = (id) => data.sales
+.filter(s => Number(s.barberId) === Number(id) && String(s.date || "").startsWith(mesActual))
+.reduce((sum, s) => sum + toNumber(s.total), 0);
+const totalSales = data.staff.reduce((sum, s) => sum + ventasDe(s.id), 0);
 
 return (
 <div>
@@ -1430,7 +1424,7 @@ return (
   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
     {[
       { label: "EMPLEADOS", val: data.staff.length },
-      { label: "VENTAS TOTAL", val: `$${(totalSales/1000).toFixed(0)}K` },
+      { label: "VENTAS DEL MES", val: `$${(totalSales/1000).toFixed(0)}K` },
     ].map(s => (
       <div key={s.label} className="card" style={{ textAlign: "center", padding: 16 }}>
         <div className="stat-num">{s.val}</div>
@@ -1441,7 +1435,8 @@ return (
 
   {data.staff.map(emp => {
     const empApps = data.appointments.filter(a => a.barberId === emp.id);
-    const commission = Math.floor(toNumber(emp.sales) * toNumber(emp.commission) / 100);
+    const ventasMes = ventasDe(emp.id);
+const commission = Math.floor(ventasMes * toNumber(emp.commission) / 100);
     return (
       <div key={emp.id} className="card" style={{ marginBottom: 14 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
@@ -1456,8 +1451,8 @@ return (
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 18, color: "#c8a96e", letterSpacing: 1 }}>${(emp.sales/1000).toFixed(0)}K</div>
-            <div style={{ fontSize: 10, color: "#555", fontFamily: "Lato", marginTop: 2 }}>EN VENTAS</div>
+            <div style={{ fontSize: 18, color: "#c8a96e", letterSpacing: 1 }}>${(ventasMes/1000).toFixed(0)}K</div>
+            <div style={{ fontSize: 10, color: "#555", fontFamily: "Lato", marginTop: 2 }}>VENTAS DEL MES</div>
           </div>
         </div>
 
@@ -1480,7 +1475,7 @@ return (
             <div style={{ fontSize: 16, letterSpacing: 1, color: "#f0e6d3", marginTop: 2 }}>{empApps.length}</div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 9, letterSpacing: 2, color: "#555", fontFamily: "Lato" }}>COMISIÓN GANADA</div>
+            <div style={{ fontSize: 9, letterSpacing: 2, color: "#555", fontFamily: "Lato" }}>COMISIÓN DEL MES</div>
             <div style={{ fontSize: 16, color: "#22c55e", letterSpacing: 1, marginTop: 2 }}>${commission.toLocaleString()}</div>
           </div>
         </div>

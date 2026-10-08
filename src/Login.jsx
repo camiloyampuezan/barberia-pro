@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { getConfig } from "./db";
+import { useState } from "react";
+import { supabase } from "./supabase";
 
 function Footer() {
   return (
@@ -13,35 +13,37 @@ function Footer() {
 
 export default function Login({ onLogin }) {
   const [form, setForm] = useState({ user: "", pass: "" });
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [credentials, setCredentials] = useState({ user: "admin", pass: "barberia2026" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const loadCredentials = async () => {
-      const user = await getConfig("admin_user");
-      const pass = await getConfig("admin_pass");
-      if (user && pass) setCredentials({ user, pass });
-      setLoading(false);
-    };
-    loadCredentials();
-  }, []);
-
-  const handleLogin = () => {
-    if (form.user === credentials.user && form.pass === credentials.pass) {
-      localStorage.setItem("barberia_auth", "true");
-      onLogin();
-    } else {
-      setError(true);
-      setTimeout(() => setError(false), 3000);
-    }
+  const mostrarError = (msg) => {
+    setError(msg);
+    setTimeout(() => setError(""), 3000);
   };
 
-  if (loading) return (
-    <div style={{ background: "#0a0a0a", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#c8a96e", fontFamily: "Oswald, sans-serif", fontSize: 20, letterSpacing: 4 }}>
-      CARGANDO...
-    </div>
-  );
+  // La clave se verifica en Supabase (función login_admin); nunca se descarga al navegador
+  const handleLogin = async () => {
+    if (!form.user || !form.pass || loading) return;
+    setLoading(true);
+    try {
+      const { data, error: rpcError } = await supabase.rpc("login_admin", {
+        p_usuario: form.user,
+        p_clave: form.pass,
+      });
+      if (rpcError) throw rpcError;
+      if (data === true) {
+        localStorage.setItem("barberia_auth", "true");
+        onLogin();
+      } else {
+        mostrarError("Usuario o contraseña incorrectos");
+      }
+    } catch (e) {
+      console.error("Error de login:", e);
+      mostrarError("No se pudo conectar. Intenta de nuevo.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={{ fontFamily: "'Oswald', sans-serif", background: "#0a0a0a", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -90,11 +92,11 @@ export default function Login({ onLogin }) {
             </div>
             {error && (
               <div style={{ background: "rgba(220,38,38,0.1)", border: "1px solid rgba(220,38,38,0.3)", borderRadius: 8, padding: "10px 14px", marginBottom: 16, fontSize: 12, color: "#ef4444", fontFamily: "Lato", textAlign: "center" }}>
-                Usuario o contraseña incorrectos
+                {error}
               </div>
             )}
             <button onClick={handleLogin} style={{ background: "linear-gradient(135deg, #c8a96e, #e8c97e)", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "14px", width: "100%", fontFamily: "Oswald", fontSize: 14, letterSpacing: 2, cursor: "pointer", fontWeight: 600 }}>
-              INGRESAR
+              {loading ? "VERIFICANDO..." : "INGRESAR"}
             </button>
           </div>
 

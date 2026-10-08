@@ -100,7 +100,7 @@ export const addPersonal = async (empleado) => {
 export const getCitasByDate = async (date) => {
   const { data, error } = await supabase
     .from('citas')
-    .select('time, barber_id')
+    .select('time, barber_id, duration')
     .eq('date', date)
     .neq('status', 'cancelled');
   if (error) console.error(error);

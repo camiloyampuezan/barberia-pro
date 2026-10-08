@@ -30,6 +30,22 @@ const HOURS = [
   "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30",
 ];
 
+const toMin = (hhmm) => { const [h, m] = String(hhmm).slice(0, 5).split(":").map(Number); return h * 60 + m; };
+// Jornada: la mañana termina a las 12:30 y la tarde a las 18:00 (ajusta si cambia el horario)
+const sessionEnd = (startMin) => (startMin < 14 * 60 ? 12 * 60 + 30 : 18 * 60);
+// Un horario está libre si el servicio cabe en la jornada y no se cruza con otra cita del mismo barbero
+const slotAvailable = (hour, duration, citas, barberId) => {
+  const start = toMin(hour);
+  const end = start + duration;
+  if (end > sessionEnd(start)) return false;
+  return !citas.some(c => {
+    if (barberId && c.barber_id && Number(c.barber_id) !== Number(barberId)) return false;
+    const cs = toMin(c.time);
+    const ce = cs + (Number(c.duration) || 30);
+    return start < ce && cs < end;
+  });
+};
+
 const DAYS = ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"];
 const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
@@ -106,7 +122,7 @@ export default function BookingPage() {
     getCitasByDate(selected.date)
       .then(citas => {
         if (cancelled) return;
-        setBookedSlots((citas || []).map(c => c.time));
+        setBookedSlots(citas || []);
       })
       .catch(err => console.error("Error cargando citas:", err));
     return () => { cancelled = true; };
@@ -485,7 +501,7 @@ export default function BookingPage() {
                 <label className="label">Horarios disponibles</label>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 24 }}>
                   {HOURS.map(h => {
-                    const taken = bookedSlots.includes(h);
+                    const taken = !slotAvailable(h, selected.service?.duration || 30, bookedSlots, selected.barber?.id);
                     const [slotHours, slotMinutes] = h.split(":").map(Number);
                     const isPastHour =
                       selected.date === todayIso &&

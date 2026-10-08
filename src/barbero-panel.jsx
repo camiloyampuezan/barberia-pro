@@ -13,7 +13,7 @@ const ESTADO = {
 const S = {
   page: { fontFamily: "Lato, sans-serif", background: "#0a0a0a", minHeight: "100vh", color: "#f0e6d3", padding: 20 },
   card: { background: "#141414", border: "1px solid #222", borderRadius: 12, padding: 18, marginBottom: 12 },
-  input: { background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: 8, padding: "12px 14px", color: "#f0e6d3", width: "100%", fontSize: 14, outline: "none", marginBottom: 12 },
+  input: { boxSizing: "border-box", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: 8, padding: "12px 14px", color: "#f0e6d3", width: "100%", fontSize: 14, outline: "none", marginBottom: 12 },
   btn: { background: "linear-gradient(135deg,#c8a96e,#e8c97e)", color: "#0a0a0a", border: "none", borderRadius: 8, padding: "12px 18px", fontFamily: "Oswald, sans-serif", letterSpacing: 2, fontWeight: 600, cursor: "pointer" },
   ghost: { background: "none", color: "#c8a96e", border: "1px solid #c8a96e55", borderRadius: 8, padding: "8px 14px", cursor: "pointer" },
 };
